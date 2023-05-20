@@ -1,16 +1,33 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[12pt,a4paper]{ctexart}
 \usepackage[]{xeCJK}
+\usepackage{ctex}
+\usepackage{ctexheading}
 \setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
+\ctexset {
+section = {
+name = {第,章},
+number = \chinese{section},
+},
+subsection = {
+name = {第,节},
+number = \chinese{subsection},
+}
+}
 \date{}
+
+
+
 
 \title{\Huge\textbf{2023年全国大学生信息安全竞赛\\作品报告}}
 \begin{document}
 \maketitle
-\vspace{8cm}
+\vspace{6cm}
 {
-    \Large\textbf{作品名称}：\underline{\makebox[10cm]{\textbf{基于深度学习的恶意代码检测}}}
+    \Large\textbf{作品名称}：\textbf{\underline{\makebox[10cm]{基于TrustZone-M函数级内存地址}}}
+
+    \textbf{\underline{\makebox[13cm]{空间随机化的可信实时系统}}}
 
     \textbf{电子邮箱}：\underline{\makebox[10cm]{\textbf{213211377@seu.edu.cn}}}
 
