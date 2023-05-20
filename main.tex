@@ -1,5 +1,15 @@
 \documentclass[12pt,a4paper]{ctexart}
 \usepackage[final]{pdfpages}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{xcolor}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor[gray]{0.6}{\leftmark}}
+\fancyhead[R]{\textcolor[gray]{0.6}{\rightmark}}
+\fancyfoot[C]{\textcolor[gray]{0.6}{第\thepage 页~共\pageref{LastPage}页}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
 \setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
@@ -42,8 +52,11 @@ number = \chinese{subsection},
 \setcounter{page}{1}
 \section*{摘要}
 \addcontentsline{toc}{section}{摘要}
+\thispagestyle{empty}
 简要说明创作本作品之动机、功能、特性、创新处、实用性等.
+\clearpage
 \section{作品概述}
+\subsection{作品背景}
 可包括背景分析、研究现状、特色描述、应用前景分析等
 \section{作品设计与实现}
 可包括系统架构设计、系统实现方案、系统实现功能等
