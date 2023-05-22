@@ -83,14 +83,14 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
     \centering
     \includegraphics[scale=0.5]{graph/TFM1.jpg}
     \caption{Trusted Firmware-M架构图}
-\end{figure} 
+\end{figure}
 \par \textbf{资源分配:}TrustZone-M 技术为ARMv8-M架构设备提供基于硬件的内存隔离机制,处理器根据内存映射可以对所有资源（包括内存，外设等）进行访问，其内存资源可以设置不同的安全属性以及资源访问控制权限。内存资源可以通过安全属性单元（Security Attribution Unit，SAU）进行安全区域的划分，区域数量由芯片制造商决定，一般为8个区域，SAU只能在处理器处于安全状态下被配置。除SAU之外，安全属性还可以通过实现定义属性单元（Implementation Defined Attribution Unit，IDAU）来进行配置。对某一内存区域来说，其安全属性取决于SAU和IDAU对其配置的共同作用结果，通过对两种配置取逻辑或操作以确定最终的安全属性。此外，内存资源可以通过内存保护单元（Memory Protection Unit，MPU）进行内存访问权限的设置，包括读权限、写权限、可执行权限。任何未遵守该权限要求的访问将会触发HardFault 异常处理，安全/非安全世界各有一个MPU。
 \par \textbf{异常处理:}在支持‘TrustZone-M 的设备上，通过嵌套向量控制器（Nested VectorInterrupt Control，NVIC）可以设置异常处理为安全或者非安全属性。ARM的M系列处理器在异常处理时支持硬件级的异常上下文保存与恢复。TrustZone-M 的异常处理操作模式切换如图1-2所示，一旦异常被触发，处理器根据向量表（Vector Table）决定异常处理程序并进行控制流跳转，其操作模式自动切换成handler模式并且使用MSP作为异常处理时的栈指针，而异常触发前的上下文信息会自动的压入在先前执行的栈中，称为异常栈帧（Exception Frame）。在ARMv8-M Baseline 架构下的异常栈帧的结构如图1-3所示，包括状态寄存器xPSR、异常返回地址、链接寄存器LR以及通用寄存器RO-R3的值。同时，当前链接寄存器LR将会载入一个称为EXE\_RETURN的特殊值，该特殊值记录着异常返回时处理器的状态信息，如处理器的操作模式、安全状态、使用的栈寄存器等。当异常返回（即跳转至EXE\_RETURN）时，异常栈帧中的内容会自动的载入其对应的寄存器中以恢复异常触发前的上下文，控制流也回到异常触发前的位置继续执行。\\
 
 \textbf{（2）基于TrustZone-M的可信执行环境研究应用}
 \par 迄今为止，已有相关公司以及研究团队利用TrustZone-M技术提出面向资源受限设备的可信执行环境。Trusted Firmware-M （TF-M）是ARM公司针对ARMv8-M架构包括Cortex-M23，Cortex-M33，Cortex-M55处理器）或者双核平台提供的一个基于双世界架构（即安全世界和非安全世界）的可信执行环境。它符合ARM公司为物联网嵌入式系统提出的首个行业安全平台架构 PSA Platform Security Architecture）标准，并由ARM公司主导开源。TF-M在ARMv8-M架构上利用TrustZone-M 的隔离机制将程序执行环境划分为非安全处理环境（Non-secure Processing Environment，NSPE）以及安全处理环境（Secure Processing Environment，SPE）。在安全处理环境中，TF-M为用户层提供多种安全服务，比如安全启动、安全密钥、安全存储等。其内核层利用SAU以及MPU对安全服务之间进行运行时隔离，并为安全服务之间以及NSPE与安全服务之间提供了安全的通信、安全中断处理等机制，NSPE中的程序可以通过TF-M提供的PSA功能API对安全服务进行调用。然而，用户程序对安全服务进行调用时会进入阻塞直到调用结果返回，这是因为TF-M为满足PSA提出的高等级隔离，TF-M中安全服务的调用模型为信号驱动型且由TF-M 内核提供进程间通信（ Inter-processingCommunication，IPC）机制负责与安全服务进行交互。
 \begin{figure}
-    
+
 \end{figure}
 \par Trustonic公司与Microchip公司联手推出了基于TrustZone-M的 Knibi-M双世界架构可信执行环境，它针对裸机版本的SAML1120l设计开发，用于为该设备提供可信的安全服务。它包括内建的密码算法和安全数据存储，可以被集成到支持TrustZone-M的不同微处理器上。Knibi-M利用TrustZone-M以及安全网关（Secure Gateway）[21以与传统的非安全世界应用进行隔离。安全世界包括Knibi-M引导（Bootloader）以及多个安全服务的操作系统，可以为非安全世界中的应用程序提供安全的功能。非安全世界包括主要的应用程序以及调用安全服务的接口。Knibi-M含有一个设备唯一的密钥（目前仅支持SAML11 KPH版本），它是设备出厂时由制造商安装的，它可以为Knibi-M提供消息证明，证明的消息可以被‘Trustonic 的云服务商认证，从而证明该消息来自一个已知的设备。目前，Knibi-M只支持裸机版本 SAML11，并不支持其他型号的ARMv8-M 设备且未支持实时操作系统。
 
@@ -103,7 +103,7 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \par TF-M 采用了两个核心概念：Secure Processing Environment（SPE）和Non-Secure Processing Environment（NSPE）。SPE 是一个安全执行环境，可以保护关键数据和代码免受未经授权的访问和修改。NSPE 是一个普通的执行环境，可以访问所有的硬件资源。TF-M 提供了一组安全服务，例如安全启动、加密解密、密钥管理、认证和授权等，这些服务可以在SPE中运行，以保证安全性。
 \par TF-M的系统整体架构设计如图所示。整个TF-M部署在安全世界（SPE）中，为安全/非安全世界提供安全服务，主要由安全启动（Secure Boot）、TF-M内核（TF-M Core）以及安全服务（Secure Service）组成。
 \begin{figure}
-    
+
 \end{figure}
 \par 在Trusted Firmware-M的背景下，安全启动负责在固件映像被加载和执行之前验证其真实性和完整性。它通过根据设备安全引导固件中存储的一组受信任的密钥检查固件映像的数字签名来执行此验证。安全启动可以对SPE （Secure Processing Environment）和 NSPE （Non-Secure Processing Environment）固件映像进行身份验证。NSPE映像在设备的非安全世界中执行，而SPE映像在安全世界中执行。如果固件映像未通过Secure Boot验证，则会被拒绝，设备将无法执行它。这可以防止攻击者在设备上执行未经授权的代码，从而保护设备及其数据免受恶意活动的侵害。
 \par TF-M内核是TF-M的主要组成部分之一，它是一个基于微内核的安全操作系统内核。TF-M core的主要功能是提供安全隔离、通信控制和安全执行，主要模块包括IPC、SPM、Interrupt Handling。其中，IPC 用于在SPE和 NSPE之间进行通信。它提供了一种安全的方式，以便在受保护的环境内传递数据和控制信息。SPM用于管理和控制在SPE中运行的各个安全分区。SPM使得多个安全分区可以在同一硬件平台上运行，并且可以互相隔离。Interrupt Handling用于管理和处理来自设备的中断请求。TF-M内核通过在SPE和NSPE之间传递中断请求，确保了所有中断的安全处理。TF-M内核还包括一些其他的辅助模块，比如Secure Entry/Exit和Secure Attribution等，用于在SPE和NSPE之间进行安全的上下文切换和资源分配。
