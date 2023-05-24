@@ -15,7 +15,6 @@
 \setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
-%\newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\}
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
 \ctexset {
@@ -91,37 +90,38 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 
 \subsubsubsection{基于TrustZone-M的可信执行环境研究应用}
 \par 迄今为止，已有相关公司以及研究团队利用TrustZone-M技术提出面向资源受限设备的可信执行环境。Trusted Firmware-M （TF-M）是ARM公司针对ARMv8-M架构包括Cortex-M23，Cortex-M33，Cortex-M55处理器）或者双核平台提供的一个基于双世界架构（即安全世界和非安全世界）的可信执行环境。它符合ARM公司为物联网嵌入式系统提出的首个行业安全平台架构 PSA Platform Security Architecture）标准，并由ARM公司主导开源。TF-M在ARMv8-M架构上利用TrustZone-M 的隔离机制将程序执行环境划分为非安全处理环境（Non-secure Processing Environment，NSPE）以及安全处理环境（Secure Processing Environment，SPE）。在安全处理环境中，TF-M为用户层提供多种安全服务，比如安全启动、安全密钥、安全存储等。其内核层利用SAU以及MPU对安全服务之间进行运行时隔离，并为安全服务之间以及NSPE与安全服务之间提供了安全的通信、安全中断处理等机制，NSPE中的程序可以通过TF-M提供的PSA功能API对安全服务进行调用。然而，用户程序对安全服务进行调用时会进入阻塞直到调用结果返回，这是因为TF-M为满足PSA提出的高等级隔离，TF-M中安全服务的调用模型为信号驱动型且由TF-M 内核提供进程间通信（ Inter-processingCommunication，IPC）机制负责与安全服务进行交互。
+\begin{figure}
+<<<<<<< HEAD
+    \centering
+    \includegraphics[scale=0.5]{graph/2.png}
+    \caption{基于TrustZone-M的系统运行机制}
+=======
 
-
-\begin{figure}[htbp]
-    \centering
-    \begin{minipage}[t]{0.4\textwidth} %textwidth值小于0.25，或者linewidth小于0.5，不过这里设置textwidth比设置linewidth效果好一些
-    \centering
-    \includegraphics[scale=0.25]{graph/3.png}
-    \caption{异常处理操作模式切换}
-    \end{minipage}
-    \hspace{0.58in} % 两图片之间的距离
-    \begin{minipage}[t]{0.4\textwidth}%textwidth值小于0.25
-    \centering
-    \includegraphics[scale=0.25]{graph/4.png}
-    \caption{异常帧栈结构}
-    \end{minipage}
+>>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
 \end{figure}
 \par Trustonic公司与Microchip公司联手推出了基于TrustZone-M的 Knibi-M双世界架构可信执行环境，它针对裸机版本的SAML1120l设计开发，用于为该设备提供可信的安全服务。它包括内建的密码算法和安全数据存储，可以被集成到支持TrustZone-M的不同微处理器上。Knibi-M利用TrustZone-M以及安全网关（Secure Gateway）[21以与传统的非安全世界应用进行隔离。安全世界包括Knibi-M引导（Bootloader）以及多个安全服务的操作系统，可以为非安全世界中的应用程序提供安全的功能。非安全世界包括主要的应用程序以及调用安全服务的接口。Knibi-M含有一个设备唯一的密钥（目前仅支持SAML11 KPH版本），它是设备出厂时由制造商安装的，它可以为Knibi-M提供消息证明，证明的消息可以被‘Trustonic 的云服务商认证，从而证明该消息来自一个已知的设备。目前，Knibi-M只支持裸机版本 SAML11，并不支持其他型号的ARMv8-M 设备且未支持实时操作系统。
 
 \par Oliveiral22l等人利用‘TrustZone-M 技术，针对ARMv8-M 设备提出了基于多世界（Multi-world）架构的可信执行环境操作系统UTANGO。它根据最小权限原则，利用TrustZone-M的安全状态控制器（即SAU或 IDAU）降低安全服务的执行权限并使其在非安全世界下执行，并为非安全世界的程序以及各个安全服务提供互相隔离且相同的运行环境，该运行环境称为非安全虚拟世界（Non-secure Virtual World，NSVW）。为了能切换不同的 NSVW，每个NSVW都有一个世界控制块（World Control Block，WCB）用于记录其上下文内容，系统运行时UTANGO在安全世界为非安全世界运行的所有NSVW进行调度并为各个NSVW之间提供数据通信接口。然而，由于在世界切换过程中涉及大量的上下文内容保存与恢复，为系统带来较严重的性能开销。另外，目前UTANGO暂不支持抢占式世界切换，非当前NSVW产生的异常难以得到及时的处理，对系统实时性有一定影响。
 \par 现有TrustZone-M的可信执行环境的相关工作，其功能主要是为安全服务提供可信的执行环境并为用户提供基于不同安全通信机制的安全服务调用。然而，目前开源可信执行环境中的安全通信机制交互过程复杂，相对于资源和性能受限的低端嵌入式系统来说具有较大代码和性能开销，且可扩展性较差，例如TF-M的信号驱动型安全服务以及IPC的通信机制、UTANGO中NSVW之间繁重的上下文切换等。除此之外，现有基于双世界架构的安全通信机制只允许执行单个安全服务，并未考虑实时操作系统环境下多任务对安全服务进行并发调用需求，导致多任务下对安全服务的调用易受到阻塞，对多任务间的实时协同性产生影响。然而，TF-M 以及Knibi-M 的安全通信中对安全服务请求过程的参数检查，隔离机制等为本论文设计安全通信机制提供了一种可行思路。另外，本论文针对现有可信操作系统未支持多任务场景下安全服务的并发调用问题，基于现有实时操作系统FreeRTOS，设计多任务场景下对安全服务的并发调用技术。
 
-\subsubsection{Trusted firmware-M开源固件项目}
-\par Trusted Firmware-M（TF-M）是由Arm开发的开源固件项目，旨在为物联网（loT）设备提供安全的运行环境。TF-M旨在提供一个可配置和可裁剪的安全固件平台，以支持从小型嵌入式设备到高端安全系统的多种应用场景。TF-M的架构是模块化的，允许使用者在不影响其他模块的情况下添加或删除安全服务。\\
-\subsubsubsection{Trusted firmware-M架构及安全机制}
-\par TF-M 采用了两个核心概念：Secure Processing Environment（SPE）和Non-Secure Processing Environment（NSPE）。SPE 是一个安全执行环境，可以保护关键数据和代码免受未经授权的访问和修改。NSPE 是一个普通的执行环境，可以访问所有的硬件资源。TF-M 提供了一组安全服务，例如安全启动、加密解密、密钥管理、认证和授权等，这些服务可以在SPE中运行，以保证安全性。
-\par TF-M的系统整体架构设计如图所示。整个TF-M部署在安全世界（SPE）中，为安全/非安全世界提供安全服务，主要由安全启动（Secure Boot）、TF-M内核（TF-M Core）以及安全服务（Secure Service）组成。
 
-\begin{figure}
+\begin{figure}[htbp]
     \centering
-    \includegraphics[scale=0.5]{graph/1.jpg}
-    \caption{Trusted Firmware-M架构图}
+    \begin{minipage}[t]{0.4\textwidth} %textwidth值小于0.25，或者linewidth小于0.5，不过这里设置textwidth比设置linewidth效果好一些
+        \centering
+        \includegraphics[scale=0.25]{graph/3.png}
+        \caption{异常处理操作模式切换}
+    \end{minipage}
+    \hspace{0.58in} % 两图片之间的距离
+    \begin{minipage}[t]{0.4\textwidth}%textwidth值小于0.25
+        \centering
+        \includegraphics[scale=0.25]{graph/4.png}
+        \caption{异常帧栈结构}
+    \end{minipage}
+=======
+\begin{figure}
+
+>>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
 \end{figure}
 
 \par 在Trusted Firmware-M的背景下，安全启动负责在固件映像被加载和执行之前验证其真实性和完整性。它通过根据设备安全引导固件中存储的一组受信任的密钥检查固件映像的数字签名来执行此验证。安全启动可以对SPE （Secure Processing Environment）和 NSPE （Non-Secure Processing Environment）固件映像进行身份验证。NSPE映像在设备的非安全世界中执行，而SPE映像在安全世界中执行。如果固件映像未通过Secure Boot验证，则会被拒绝，设备将无法执行它。这可以防止攻击者在设备上执行未经授权的代码，从而保护设备及其数据免受恶意活动的侵害。
@@ -148,9 +148,9 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \subsubsection{研究现状总结}
 \par 现有研究工作在面向内存破坏攻击的通用系统防御技术，基于TrustZone-M技术的可信执行环境构建技术以及面向低端嵌入式系统的内存破坏防御技术方面都已取得一定的进展和成果，发现不同的技术均有其优缺点，对本论文研究工作的开展有很大的借鉴价值，现状总结如下:
 \begin{itemize}
-\item[(1)] 当前针对TrustZone-M技术的TEE OS研究尚处于起步阶段，其安全通信机制在设计上存在安全冗余，对低端嵌入式系统具有较大性能开销。此外，现有技术针对安全服务调用暂不支持多任务并发，影响系统多任务实时协同。
-\item[(2)] 现有OTA技术在更新过程中端到端的安全性难以保证，固件在更新过程中可能被攻击者所获取并对其进行逆向分析从而挖掘其中存在的安全漏洞，最终在固件所在设备上实现漏洞利用。
-\item[(3)] 现有地址空间信息隐藏技术均存在安全隐患。由于基于启动阶段的软件多样化技术并未对多样化部署代码进行多样化且缺乏可信根（Root of Trust) ,因此无法保证其自身的可信，攻击者可能利用该代码执行代码复用攻击以破坏系统安全性;基于编译阶段的多样化技术由于资源限制具有较小随机嫡，且其易受到暴力破解攻击。XOM技术通过运行时无法对固件进行读取从而防御地址空间信息泄漏，然而其与编译阶段的多样化技术一样，无法防御离线固件读取攻击，比如OTA更新时的固件泄漏攻击。
+    \item[(1)] 当前针对TrustZone-M技术的TEE OS研究尚处于起步阶段，其安全通信机制在设计上存在安全冗余，对低端嵌入式系统具有较大性能开销。此外，现有技术针对安全服务调用暂不支持多任务并发，影响系统多任务实时协同。
+    \item[(2)] 现有OTA技术在更新过程中端到端的安全性难以保证，固件在更新过程中可能被攻击者所获取并对其进行逆向分析从而挖掘其中存在的安全漏洞，最终在固件所在设备上实现漏洞利用。
+    \item[(3)] 现有地址空间信息隐藏技术均存在安全隐患。由于基于启动阶段的软件多样化技术并未对多样化部署代码进行多样化且缺乏可信根（Root of Trust) ,因此无法保证其自身的可信，攻击者可能利用该代码执行代码复用攻击以破坏系统安全性;基于编译阶段的多样化技术由于资源限制具有较小随机嫡，且其易受到暴力破解攻击。XOM技术通过运行时无法对固件进行读取从而防御地址空间信息泄漏，然而其与编译阶段的多样化技术一样，无法防御离线固件读取攻击，比如OTA更新时的固件泄漏攻击。
 \end{itemize}
 \subsection{作品意义与目标}
 
