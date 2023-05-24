@@ -12,11 +12,11 @@
 \fancyfoot[C]{\textcolor[gray]{0.6}{第\thepage 页~共\pageref{LastPage}页}}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
-\setcounter{tocdepth}{4}
-\setcounter{secnumdepth}{4}
 \setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
 \ctexset {
 section = {
 name = {第,章},
@@ -92,13 +92,13 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \textbf{（2）基于TrustZone-M的可信执行环境研究应用}
 \par 迄今为止，已有相关公司以及研究团队利用TrustZone-M技术提出面向资源受限设备的可信执行环境。Trusted Firmware-M （TF-M）是ARM公司针对ARMv8-M架构包括Cortex-M23，Cortex-M33，Cortex-M55处理器）或者双核平台提供的一个基于双世界架构（即安全世界和非安全世界）的可信执行环境。它符合ARM公司为物联网嵌入式系统提出的首个行业安全平台架构 PSA Platform Security Architecture）标准，并由ARM公司主导开源。TF-M在ARMv8-M架构上利用TrustZone-M 的隔离机制将程序执行环境划分为非安全处理环境（Non-secure Processing Environment，NSPE）以及安全处理环境（Secure Processing Environment，SPE）。在安全处理环境中，TF-M为用户层提供多种安全服务，比如安全启动、安全密钥、安全存储等。其内核层利用SAU以及MPU对安全服务之间进行运行时隔离，并为安全服务之间以及NSPE与安全服务之间提供了安全的通信、安全中断处理等机制，NSPE中的程序可以通过TF-M提供的PSA功能API对安全服务进行调用。然而，用户程序对安全服务进行调用时会进入阻塞直到调用结果返回，这是因为TF-M为满足PSA提出的高等级隔离，TF-M中安全服务的调用模型为信号驱动型且由TF-M 内核提供进程间通信（ Inter-processingCommunication，IPC）机制负责与安全服务进行交互。
 \begin{figure}
-<<<<<<< HEAD
+    <<<<<<< HEAD
     \centering
     \includegraphics[scale=0.5]{graph/2.png}
     \caption{基于TrustZone-M的系统运行机制}
-=======
+    =======
 
->>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
+    >>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
 \end{figure}
 \par Trustonic公司与Mirochip公司联手推出了基于TrustZone-M的 Knibi-M双世界架构可信执行环境，它针对裸机版本的SAML1120l设计开发，用于为该设备提供可信的安全服务。它包括内建的密码算法和安全数据存储，可以被集成到支持TrustZone-M的不同微处理器上。Knibi-M利用TrustZone-M以及安全网关（Secure Gateway）[21以与传统的非安全世界应用进行隔离。安全世界包括Knibi-M引导（Bootloader）以及多个安全服务的操作系统，可以为非安全世界中的应用程序提供安全的功能。非安全世界包括主要的应用程序以及调用安全服务的接口。Knibi-M含有一个设备唯一的密钥（目前仅支持SAML11 KPH版本），它是设备出厂时由制造商安装的，它可以为Knibi-M提供消息证明，证明的消息可以被‘Trustonic 的云服务商认证，从而证明该消息来自一个已知的设备。目前，Knibi-M只支持裸机版本 SAML11，并不支持其他型号的ARMv8-M 设备且未支持实时操作系统。
 
@@ -115,20 +115,21 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \begin{figure}[htbp]
     \centering
     \begin{minipage}[t]{0.4\textwidth} %textwidth值小于0.25，或者linewidth小于0.5，不过这里设置textwidth比设置linewidth效果好一些
-    \centering
-    \includegraphics[scale=0.25]{graph/3.png}
-    \caption{异常处理操作模式切换}
+        \centering
+        \includegraphics[scale=0.25]{graph/3.png}
+        \caption{异常处理操作模式切换}
     \end{minipage}
     \hspace{0.58in} % 两图片之间的距离
     \begin{minipage}[t]{0.4\textwidth}%textwidth值小于0.25
-    \centering
-    \includegraphics[scale=0.25]{graph/4.png}
-    \caption{异常帧栈结构}
+        \centering
+        \includegraphics[scale=0.25]{graph/4.png}
+        \caption{异常帧栈结构}
     \end{minipage}
+\end{figure}
 =======
 \begin{figure}
 
->>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
+    >>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
 \end{figure}
 
 \par 在Trusted Firmware-M的背景下，安全启动负责在固件映像被加载和执行之前验证其真实性和完整性。它通过根据设备安全引导固件中存储的一组受信任的密钥检查固件映像的数字签名来执行此验证。安全启动可以对SPE （Secure Processing Environment）和 NSPE （Non-Secure Processing Environment）固件映像进行身份验证。NSPE映像在设备的非安全世界中执行，而SPE映像在安全世界中执行。如果固件映像未通过Secure Boot验证，则会被拒绝，设备将无法执行它。这可以防止攻击者在设备上执行未经授权的代码，从而保护设备及其数据免受恶意活动的侵害。
@@ -155,9 +156,9 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \subsubsection{研究现状总结}
 \par 现有研究工作在面向内存破坏攻击的通用系统防御技术，基于TrustZone-M技术的可信执行环境构建技术以及面向低端嵌入式系统的内存破坏防御技术方面都已取得一定的进展和成果，发现不同的技术均有其优缺点，对本论文研究工作的开展有很大的借鉴价值，现状总结如下:
 \begin{itemize}
-\item[(1)] 当前针对TrustZone-M技术的TEE OS研究尚处于起步阶段，其安全通信机制在设计上存在安全冗余，对低端嵌入式系统具有较大性能开销。此外，现有技术针对安全服务调用暂不支持多任务并发，影响系统多任务实时协同。
-\item[(2)] 现有OTA技术在更新过程中端到端的安全性难以保证，固件在更新过程中可能被攻击者所获取并对其进行逆向分析从而挖掘其中存在的安全漏洞，最终在固件所在设备上实现漏洞利用。
-\item[(3)] 现有地址空间信息隐藏技术均存在安全隐患。由于基于启动阶段的软件多样化技术并未对多样化部署代码进行多样化且缺乏可信根（Root of Trust) ,因此无法保证其自身的可信，攻击者可能利用该代码执行代码复用攻击以破坏系统安全性;基于编译阶段的多样化技术由于资源限制具有较小随机嫡，且其易受到暴力破解攻击。XOM技术通过运行时无法对固件进行读取从而防御地址空间信息泄漏，然而其与编译阶段的多样化技术一样，无法防御离线固件读取攻击，比如OTA更新时的固件泄漏攻击。
+    \item[(1)] 当前针对TrustZone-M技术的TEE OS研究尚处于起步阶段，其安全通信机制在设计上存在安全冗余，对低端嵌入式系统具有较大性能开销。此外，现有技术针对安全服务调用暂不支持多任务并发，影响系统多任务实时协同。
+    \item[(2)] 现有OTA技术在更新过程中端到端的安全性难以保证，固件在更新过程中可能被攻击者所获取并对其进行逆向分析从而挖掘其中存在的安全漏洞，最终在固件所在设备上实现漏洞利用。
+    \item[(3)] 现有地址空间信息隐藏技术均存在安全隐患。由于基于启动阶段的软件多样化技术并未对多样化部署代码进行多样化且缺乏可信根（Root of Trust) ,因此无法保证其自身的可信，攻击者可能利用该代码执行代码复用攻击以破坏系统安全性;基于编译阶段的多样化技术由于资源限制具有较小随机嫡，且其易受到暴力破解攻击。XOM技术通过运行时无法对固件进行读取从而防御地址空间信息泄漏，然而其与编译阶段的多样化技术一样，无法防御离线固件读取攻击，比如OTA更新时的固件泄漏攻击。
 \end{itemize}
 \subsection{作品意义与目标}
 
