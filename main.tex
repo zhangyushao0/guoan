@@ -62,6 +62,7 @@ number = \chinese{subsection},
 
 \subsection{研究现状}
 \par 随着ARMv8-M架构设备在物联网市场的逐渐普及，低端嵌入式系统的安全性近年来受到广泛关注。现有研究主要集中在以下几个关键领域，以解决低端嵌入式系统面临的安全挑战。首先，现有相关研究提出基于TrustZone-M技术的可信执行环境构建技术，其主要目的是为低端嵌入式设备提供可信软件服务，通过安全的通信机制使用户应用程序能够调用安全服务从而提高系统安全性。其次，面向低端嵌入式系统的OTA技术安全风险是一个重要领域，研究人员致力于解决OTA过程中可能面临的各种安全威胁。另外，Trusted firmware-M开源固件项目提供了一个综合性的安全框架，用于保护Arm Cortex-M设备的安全性。此外，面向低端嵌入式系统的内存破坏防御技术针对内存破坏攻击威胁进行研究，主要包括控制流完整性保护和地址空间信息隐藏技术。最后，ASLR（Address Space Layout Randomization）地址空间布局随机化技术提出了一种从另一个角度对系统进行保护的安全技术。这些研究领域的进展对于提高低端嵌入式系统的安全性具有重要意义。
+
 \subsubsection{ASLR(Address Space Layout Randomization)地址空间布局随机化}
 \par 自从1988年11月2日莫里斯蠕虫利用缓冲区溢出漏洞感染了上万台计算机之后，安全防护领域涌现出许多针对特定攻击方式的技术，例如StackGuard用于阻止栈溢出，DEP用于阻止代码注入等。然而，这些技术各自只能防御一种特定方式的攻击，要将它们集成在一起实现综合的防护变得困难且具有较高的实施开销。此外，攻击者不断创新，不断出现新的攻击方式，这使得传统的防护技术面临挑战。
 \par 为了解决这些不足，研究人员开始探索一种从另一个角度对系统进行保护的安全技术，即地址空间布局随机化（ASLR）。ASLR的核心思想是通过随机化系统的内存布局，使得攻击者无法预测和利用特定的内存地址，从而增加攻击的难度。它引入了一定程度的不确定性和随机性，使得攻击者难以准确定位和利用系统中的关键函数或数据。
@@ -71,10 +72,10 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \par 具体来说，在ASLR的实施中，栈基地址的4-27位共24位会被随机化，而主程序映像、静态数据区和堆这一连续区域的基地址的12-27位共16位以及共享加载库地址的12-27位共16位也会被随机化。通过这种方式，ASLR增加了系统内存布局的不确定性，使得攻击者无法事先获知关键代码和数据的准确位置。
 \par 在与数据保护执行（Data Execution Prevention，DEP）结合使用时，ASLR构成了一个完整的系统防护方案。DEP技术迫使攻击者只能使用空间中已有的代码，而ASLR使得这些代码的地址变得不可预测。这样的组合极大地降低了攻击成功的概率，在当时的Linux系统中得到广泛应用。从Windows Vista开始，ASLR也被集成到Windows操作系统中，并随后出现在各种主流通用操作系统中。
 \par 然而，在嵌入式系统中，由于其地址空间较小且缺乏像加载器这样的硬件条件，ASLR技术的实施变得相对困难。为解决这个问题，本文提出了以函数为粒度的函数动态随机加载技术，并建立相应的安全执行环境。通过这种方法，嵌入式系统能够在受限的资源和硬件条件下，实现对函数地址的随机化，从而提高系统的安全性。
+
 \subsubsection{基于TrustZonc-M技术的可信执行环境构建技术}
 一般来说，可信执行环境由可信执行环境操作系统（Trusted Execution EnvironmentOperating System，TEE OS）以及安全服务（或称为TA，Trusted Application）构成，可信执行环境操作系统主要为用户调用安全服务提供安全的通信机制。ARM TrustZone技术是ARM 公司2008年提出的处理器级系统范围的可信执行环境解决方案，为Cortex-A 系列芯片提供安全的可信执行环境支持。目前，大多数智能手机已配备有TrustZone的芯片以及可信执行环境操作系统，并安装了相应的安全服务以用于手机的安全支付、指纹服务、文件保密等。为了满足低端嵌入式系统对安全日益增长的需求，ARM在2015年提出了面向Cortex-M系列芯片的TrustZone-M8技术并支持ARMv8-M架构设备。基于TrustZone-M的低端嵌入式系统在物联网市场正逐渐普及，然而，面向资源受限设备的可信执行环境研究在学术界和工业界尚处于起步阶段。\\
-
-\textbf{（1）TrustZone-M 技术的安全机制}
+\paragraph{（1）TrustZone-M 技术的安全机制}
 \par TrustZone-M面向资源受限的低端嵌入式设备，利用系统级的硬件隔离技术将系统资源分为安全/非安全世界。安全世界的资源可以访问非安全世界的资源，反之则会产生错误。下面从编程模型、资源分配以及异常处理三方面对TrustZone-M进行介绍。
 \par \textbf{编程模型:}自ARMv7-M架构开始，处理器有两种操作模式:thread模式和 handler模式。在thread模式下，处理器用于执行应用程序代码且其访问权限级别可以处于特权态（Privileged）或者非特权态（Unprivileged）。在 handler模式下，处理器用于执行异常处理程序代码且总是特权态。ARMv8-M架构引入TrustZone-M技术后，处理器额外增加了两个安全状态:安全态（Secure State）和非安全态（Non-secure State），这两个状态和处理器操作模式互相独立，即每个安全状态都有thread或者handler两个操作模式。安全状态不是由某一安全位控制，而是取决于处理器所访问的内存地址或者IO地址是映射在安全还是非安全世界。若该内存映射在安全世界，则处理器状态为安全态，反之，则为非安全态。不同的安全状态以及处理器操作模式对应不同的栈指针寄存器，共有 PSP\_NS、PSP\_S、MSP\_NS、MSP\_S 四个栈指针寄存器，程序当前所使用的寄存器由当前处理器的状态决定，其中，thread 模式可以使用PSP （Process Stack Pointer>栈指针寄存器，也可以使用MSP （Main Stack Pointer）栈指针寄存器，而handler模式只能使用MSP栈指针寄存器。此外，支持 TrustZone-M 的ARMv8-M架构为两个安全状态分配了独立的CONTROL寄存器以及异常处理控制寄存器（PRIMASK、FAULTMASK、BASEPRI）。
 \par \textbf{安全/非安全世界的切换通过三条新引入的指令实现:}用于从非安全世界跳转至安全世界指令BXNS （Branch and Exchange Non-secure（、安全网关指令SG （SecureGateway）以及用于从安全世界链接跳转至非安全世界指令BLXNS （Branch with Linkand Exchange Non-secure）。安全世界程序调用非安全世界程序一般使用BLXNS 指令，然而，非安全世界程序不能直接调用安全世界程序，它必须首先跳转至该程序在一块特殊的安全世界内存区域的入口，该内存区域被称为非安全可调用（Non-SecureCallable，NSC）区域。为保证入口是从非安全世界至安全世界的有效跳转，入口的第一条指令必须为SG。当安全世界程序执行完成后，使用BXNS指令即可返回至非安全世界。此外，异常处理时也可以发生安全状态的切换。
@@ -87,16 +88,12 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \par \textbf{资源分配:}TrustZone-M 技术为ARMv8-M架构设备提供基于硬件的内存隔离机制,处理器根据内存映射可以对所有资源（包括内存，外设等）进行访问，其内存资源可以设置不同的安全属性以及资源访问控制权限。内存资源可以通过安全属性单元（Security Attribution Unit，SAU）进行安全区域的划分，区域数量由芯片制造商决定，一般为8个区域，SAU只能在处理器处于安全状态下被配置。除SAU之外，安全属性还可以通过实现定义属性单元（Implementation Defined Attribution Unit，IDAU）来进行配置。对某一内存区域来说，其安全属性取决于SAU和IDAU对其配置的共同作用结果，通过对两种配置取逻辑或操作以确定最终的安全属性。此外，内存资源可以通过内存保护单元（Memory Protection Unit，MPU）进行内存访问权限的设置，包括读权限、写权限、可执行权限。任何未遵守该权限要求的访问将会触发HardFault 异常处理，安全/非安全世界各有一个MPU。
 \par \textbf{异常处理:}在支持‘TrustZone-M 的设备上，通过嵌套向量控制器（Nested VectorInterrupt Control，NVIC）可以设置异常处理为安全或者非安全属性。ARM的M系列处理器在异常处理时支持硬件级的异常上下文保存与恢复。TrustZone-M 的异常处理操作模式切换如图1-2所示，一旦异常被触发，处理器根据向量表（Vector Table）决定异常处理程序并进行控制流跳转，其操作模式自动切换成handler模式并且使用MSP作为异常处理时的栈指针，而异常触发前的上下文信息会自动的压入在先前执行的栈中，称为异常栈帧（Exception Frame）。在ARMv8-M Baseline 架构下的异常栈帧的结构如图1-3所示，包括状态寄存器xPSR、异常返回地址、链接寄存器LR以及通用寄存器RO-R3的值。同时，当前链接寄存器LR将会载入一个称为EXE\_RETURN的特殊值，该特殊值记录着异常返回时处理器的状态信息，如处理器的操作模式、安全状态、使用的栈寄存器等。当异常返回（即跳转至EXE\_RETURN）时，异常栈帧中的内容会自动的载入其对应的寄存器中以恢复异常触发前的上下文，控制流也回到异常触发前的位置继续执行。\\
 
-\textbf{（2）基于TrustZone-M的可信执行环境研究应用}
+\paragraph{（2）基于TrustZone-M的可信执行环境研究应用}
 \par 迄今为止，已有相关公司以及研究团队利用TrustZone-M技术提出面向资源受限设备的可信执行环境。Trusted Firmware-M （TF-M）是ARM公司针对ARMv8-M架构包括Cortex-M23，Cortex-M33，Cortex-M55处理器）或者双核平台提供的一个基于双世界架构（即安全世界和非安全世界）的可信执行环境。它符合ARM公司为物联网嵌入式系统提出的首个行业安全平台架构 PSA Platform Security Architecture）标准，并由ARM公司主导开源。TF-M在ARMv8-M架构上利用TrustZone-M 的隔离机制将程序执行环境划分为非安全处理环境（Non-secure Processing Environment，NSPE）以及安全处理环境（Secure Processing Environment，SPE）。在安全处理环境中，TF-M为用户层提供多种安全服务，比如安全启动、安全密钥、安全存储等。其内核层利用SAU以及MPU对安全服务之间进行运行时隔离，并为安全服务之间以及NSPE与安全服务之间提供了安全的通信、安全中断处理等机制，NSPE中的程序可以通过TF-M提供的PSA功能API对安全服务进行调用。然而，用户程序对安全服务进行调用时会进入阻塞直到调用结果返回，这是因为TF-M为满足PSA提出的高等级隔离，TF-M中安全服务的调用模型为信号驱动型且由TF-M 内核提供进程间通信（ Inter-processingCommunication，IPC）机制负责与安全服务进行交互。
 \begin{figure}
-<<<<<<< HEAD
     \centering
     \includegraphics[scale=0.5]{graph/2.png}
     \caption{基于TrustZone-M的系统运行机制}
-=======
-
->>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
 \end{figure}
 \par Trustonic公司与Microchip公司联手推出了基于TrustZone-M的 Knibi-M双世界架构可信执行环境，它针对裸机版本的SAML1120l设计开发，用于为该设备提供可信的安全服务。它包括内建的密码算法和安全数据存储，可以被集成到支持TrustZone-M的不同微处理器上。Knibi-M利用TrustZone-M以及安全网关（Secure Gateway）[21以与传统的非安全世界应用进行隔离。安全世界包括Knibi-M引导（Bootloader）以及多个安全服务的操作系统，可以为非安全世界中的应用程序提供安全的功能。非安全世界包括主要的应用程序以及调用安全服务的接口。Knibi-M含有一个设备唯一的密钥（目前仅支持SAML11 KPH版本），它是设备出厂时由制造商安装的，它可以为Knibi-M提供消息证明，证明的消息可以被‘Trustonic 的云服务商认证，从而证明该消息来自一个已知的设备。目前，Knibi-M只支持裸机版本 SAML11，并不支持其他型号的ARMv8-M 设备且未支持实时操作系统。
 
@@ -108,7 +105,6 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \textbf{（1）Trusted firmware-M架构及安全机制}
 \par TF-M 采用了两个核心概念：Secure Processing Environment（SPE）和Non-Secure Processing Environment（NSPE）。SPE 是一个安全执行环境，可以保护关键数据和代码免受未经授权的访问和修改。NSPE 是一个普通的执行环境，可以访问所有的硬件资源。TF-M 提供了一组安全服务，例如安全启动、加密解密、密钥管理、认证和授权等，这些服务可以在SPE中运行，以保证安全性。
 \par TF-M的系统整体架构设计如图所示。整个TF-M部署在安全世界（SPE）中，为安全/非安全世界提供安全服务，主要由安全启动（Secure Boot）、TF-M内核（TF-M Core）以及安全服务（Secure Service）组成。
-<<<<<<< HEAD
 
 \begin{figure}[htbp]
     \centering
@@ -123,10 +119,6 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
     \includegraphics[scale=0.25]{graph/4.png}
     \caption{异常帧栈结构}
     \end{minipage}
-=======
-\begin{figure}
-
->>>>>>> 2bc8b46690a640fb173aa1dab7968bee48763b1b
 \end{figure}
 
 \par 在Trusted Firmware-M的背景下，安全启动负责在固件映像被加载和执行之前验证其真实性和完整性。它通过根据设备安全引导固件中存储的一组受信任的密钥检查固件映像的数字签名来执行此验证。安全启动可以对SPE （Secure Processing Environment）和 NSPE （Non-Secure Processing Environment）固件映像进行身份验证。NSPE映像在设备的非安全世界中执行，而SPE映像在安全世界中执行。如果固件映像未通过Secure Boot验证，则会被拒绝，设备将无法执行它。这可以防止攻击者在设备上执行未经授权的代码，从而保护设备及其数据免受恶意活动的侵害。
