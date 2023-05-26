@@ -5,13 +5,38 @@
 \usepackage{xcolor}
 \usepackage{cite}
 \usepackage{graphicx}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\textcolor[gray]{0.6}{\leftmark}}
-\fancyhead[R]{\textcolor[gray]{0.6}{\rightmark}}
-\fancyfoot[C]{\textcolor[gray]{0.6}{第\thepage 页~共\pageref{LastPage}页}}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{emptyStyle}
+{
+    \pagestyle{fancy}
+    \fancyhf{}
+}
+\fancypagestyle{abstractStyle}
+{
+    \pagestyle{fancy}
+    \fancyhf{}
+    \fancyfoot[C]{\textcolor[gray]{0.6}{第\thepage 页~共\pageref{LastPage}页}}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+}
+\fancypagestyle{articleStyle}
+{
+    \pagestyle{fancy}
+    \fancyhf{}
+    \fancyhead[L]{\textcolor[gray]{0.6}{\leftmark}}
+    \fancyhead[R]{\textcolor[gray]{0.6}{\rightmark}}
+    \fancyfoot[C]{\textcolor[gray]{0.6}{第\thepage 页~共\pageref{LastPage}页}}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+}
+\fancypagestyle{refStyle}
+{
+    \pagestyle{fancy}
+    \fancyhf{}
+    \fancyhead[L]{\textcolor[gray]{0.6}{\leftmark}}
+    \fancyfoot[C]{\textcolor[gray]{0.6}{第\thepage 页~共\pageref{LastPage}页}}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+}
 \setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
@@ -49,6 +74,7 @@ hang = true,
 \title{\Huge\textbf{2023年全国大学生信息安全竞赛\\作品报告}}
 
 \begin{document}
+\pagestyle{emptyStyle}
 \maketitle
 \vspace{6cm}
 {
@@ -60,20 +86,18 @@ hang = true,
 
     \textbf{提交时间}：\underline{\makebox[10cm]{\textbf{\today}}}
 }
-\thispagestyle{empty}
 \clearpage
 \includepdf{src/request.pdf}
-\thispagestyle{empty}
 \clearpage
 \tableofcontents
-\thispagestyle{empty}
 \clearpage
+\pagestyle{abstractStyle}
 \setcounter{page}{1}
 \section*{摘要}
 \addcontentsline{toc}{section}{摘要}
-\thispagestyle{empty}
 简要说明创作本作品之动机、功能、特性、创新处、实用性等.
 \clearpage
+\pagestyle{articleStyle}
 \section{作品概述}
 \subsection{作品背景}
 
@@ -291,6 +315,8 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \subsection{测试数据及分析}
 \section{创新性说明}
 \section{总结}
+\clearpage
+\pagestyle{refStyle}
 \bibliographystyle{plain}
 \bibliography{ref}
 \end{document}
