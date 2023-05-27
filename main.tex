@@ -5,6 +5,9 @@
 \usepackage{xcolor}
 \usepackage{cite}
 \usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\numberwithin{figure}{section}
 \fancypagestyle{emptyStyle}
 {
     \pagestyle{fancy}
@@ -195,6 +198,20 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \section{作品设计与实现}
 
 \subsection{系统架构设计}
+%below is the picture of the whole system
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{graph/picture of all works.png}
+    \caption{系统架构设计}
+    \label{fig:system_architecture}
+\end{figure}
+\par 如图\ref{fig:system_architecture}所示，本项目系统架构设计如下：
+
+\begin{itemize}
+    \item \textbf{TrustedFirmware-M（TF-M）框架}：利用TrustedFirmware-M，我们可以为设备的安全性提供一个可靠的基础。这个开源框架提供了一种用于保护设备的方法，包括安全启动，固件更新和安全服务。它也提供了与安全性相关的各种API，让开发人员可以更容易地实现安全功能。
+    \item \textbf{函数级地址空间布局随机化服务（ALSR）}：本项目中，我们将函数级地址空间布局随机化服务（ALSR）作为安全服务运行在设备的安全分区中，从而保证其安全性。ALSR服务的主要功能是对设备的固件进行函数级随机化加载，从而防御内存破坏攻击。
+    \item \textbf{实时操作系统FreeRTOS}：FreeRTOS是一个小型的实时操作系统内核，我们在非安全世界中运行FreeRTOS并通过函数随机化的安全服务进行重新加载，从而实现对设备的实时调度和安全执行。
+\end{itemize}
 
 \subsection{系统实现方案}
 
@@ -340,16 +357,16 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \par 实时操作系统（RTOS）是一种能够以足够快的速度接受并处理外界事件或数据的操作系统。它的主要特点是能够在规定的时间范围内控制生产过程或快速响应处理系统，并协调管理所有实时任务的运行。FreeRTOS是一款轻量级的开源实时操作系统，具有较小的内存占用和快速的任务切换速度，适用于资源受限的嵌入式系统。并且FreeRTOS具备良好的可移植性，可以在多种处理器架构和开发环境中使用，支持多种编译器和开发工具链。总的来说，FreeRTOS是构建高效、可靠和实时响应的嵌入式系统的理想选择。
 
 \begin{itemize}
-\item[(1)] 下载源码：FreeRTOS 是一款遵循 GPLv2+ 许可协议的开源免费实时操作系统。直接从 FreeRTOS 官网下载源码。下载完成后，在项目文件夹下创建一个名为 FreeRTOS 的文件夹。FreeRTOS 源码包括 .c 文件（FreeRTOS 源码文件）、include 文件夹（相关头文件）、portable 文件夹（与编译器相关的文件夹，在不同的编译器中使用不同的支持文件）以及 MemMang 文件夹（与内存管理相关的文件夹）。此外，还有一个名为 FreeRTOSConfig.h 的文件，它是 FreeRTOS 的配置文件。
+    \item[(1)] 下载源码：FreeRTOS 是一款遵循 GPLv2+ 许可协议的开源免费实时操作系统。直接从 FreeRTOS 官网下载源码。下载完成后，在项目文件夹下创建一个名为 FreeRTOS 的文件夹。FreeRTOS 源码包括 .c 文件（FreeRTOS 源码文件）、include 文件夹（相关头文件）、portable 文件夹（与编译器相关的文件夹，在不同的编译器中使用不同的支持文件）以及 MemMang 文件夹（与内存管理相关的文件夹）。此外，还有一个名为 FreeRTOSConfig.h 的文件，它是 FreeRTOS 的配置文件。
 
-\item[(2)] 将源码中的 .c 文件、include 文件夹和 portable 文件夹拷贝至创建的 FreeRTOS 文件夹中。在 portable 文件夹中，只保留 GCC 文件夹和 MemMang 文件夹，然后只保留 GCC 文件夹中的 ARM\_CM33 文件夹，以及 MemMang 文件夹中的 heap4.c 文件。接下来，将 Demo 文件夹下对应开发板的 FreeRTOSConfig.h 文件拷贝至项目的 include 文件夹中。
+    \item[(2)] 将源码中的 .c 文件、include 文件夹和 portable 文件夹拷贝至创建的 FreeRTOS 文件夹中。在 portable 文件夹中，只保留 GCC 文件夹和 MemMang 文件夹，然后只保留 GCC 文件夹中的 ARM\_CM33 文件夹，以及 MemMang 文件夹中的 heap4.c 文件。接下来，将 Demo 文件夹下对应开发板的 FreeRTOSConfig.h 文件拷贝至项目的 include 文件夹中。
 
-\item[(3)] 配置 FreeRTOSConfig.h 文件：
-\begin{itemize}
-\item[(a)] 将 configENABLE\_TRUSTZONE 设置为 1，以支持 TrustZone 模式。
-\item[(b)] 将 configENABLE\_MPU 设置为 1，以支持内存保护单元（MPU）。
-\item[(c)] 注释掉原有项目自带的一些中断处理函数，以使用 FreeRTOS 提供的中断处理函数，例如 SysTick\_Handler、SVC\_Handler 等。
-\end{itemize}
+    \item[(3)] 配置 FreeRTOSConfig.h 文件：
+        \begin{itemize}
+            \item[(a)] 将 configENABLE\_TRUSTZONE 设置为 1，以支持 TrustZone 模式。
+            \item[(b)] 将 configENABLE\_MPU 设置为 1，以支持内存保护单元（MPU）。
+            \item[(c)] 注释掉原有项目自带的一些中断处理函数，以使用 FreeRTOS 提供的中断处理函数，例如 SysTick\_Handler、SVC\_Handler 等。
+        \end{itemize}
 \end{itemize}
 
 \subsection{实验成果展示}
