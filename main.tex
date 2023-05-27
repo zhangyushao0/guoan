@@ -6,6 +6,10 @@
 \usepackage{cite}
 \usepackage{graphicx}
 \usepackage{pifont}
+\usepackage{float}
+\usepackage{amsmath}
+\numberwithin{figure}{section}
+
 \fancypagestyle{emptyStyle}
 {
     \pagestyle{fancy}
@@ -196,6 +200,20 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \section{作品设计与实现}
 
 \subsection{系统架构设计}
+%below is the picture of the whole system
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{graph/picture of all works.png}
+    \caption{系统架构设计}
+    \label{fig:system_architecture}
+\end{figure}
+\par 如图\ref{fig:system_architecture}所示，本项目系统架构设计如下：
+
+\begin{itemize}
+    \item \textbf{TrustedFirmware-M（TF-M）框架}：利用TrustedFirmware-M，我们可以为设备的安全性提供一个可靠的基础。这个开源框架提供了一种用于保护设备的方法，包括安全启动，固件更新和安全服务。它也提供了与安全性相关的各种API，让开发人员可以更容易地实现安全功能。
+    \item \textbf{函数级地址空间布局随机化服务（ALSR）}：本项目中，我们将函数级地址空间布局随机化服务（ALSR）作为安全服务运行在设备的安全分区中，从而保证其安全性。ALSR服务的主要功能是对设备的固件进行函数级随机化加载，从而防御内存破坏攻击。
+    \item \textbf{实时操作系统FreeRTOS}：FreeRTOS是一个小型的实时操作系统内核，我们在非安全世界中运行FreeRTOS并通过函数随机化的安全服务进行重新加载，从而实现对设备的实时调度和安全执行。
+\end{itemize}
 
 \subsection{系统实现方案}
 
@@ -235,8 +253,8 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \par 内存管理的关键是要将随机加载区域的已用内存和空闲内存的边界进行统一高效的管理。碎片化内存随机管理机制的基本思路是将内存以块链表进行管理，以内存块的形式为函数分配大小匹配的内存。具体地，本论文采用隐式空闲块链表（Implicit Free Lists）的方式对内存块进行管理。内存块的数据结构如图4 3（a）所示，主要包括元数据、负载数据以及填充数据：元数据由内存块的大小、以及指向下一个内存块的指针组成；负载数据用于对函数代码的加载；填充数据用于内存对齐。为方便叙述，本论文将已加载的函数所占有的内存块称为函数块，而其余的内存块则称为空闲块。本节从内存分配以及内存回收两方面对碎片化内存随机管理机制进行详细介绍。
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{graph/memoryManagement.png}
-    \caption{fASLR系统工作流程}
+    \includegraphics[scale=0.3]{graph/memoryManagement.png}
+    \caption{基于隐式空闲链表的内存管理}
 \end{figure}
 \par 当系统启动时，FRE首先将整个随机加载区域初始化成一整个空闲块，加载若干函数后，该空闲块会形成一个空闲块链表。具体来说，当有函数需要被加载时，其函数体大小为$S_f$​，FRE首先扫描空闲块链表直到找到符合该函数体大小的空闲块，该内存块大小$S_b$​满足：
 \[
@@ -255,30 +273,30 @@ ASLR的实现依赖于操作系统的支持，它需要对内核和应用程序�
 \par 基于调用栈帧展开的函数完成识别机制的目标在于从当前所有已加载的函数识别出已完成执行的函数。对于当前正在执行的函数来说，本论文将其直接调用者及其间接调用者称为祖先函数（Ancestor Function）。在系统运行过程中，当前正在执行函数的祖先函数通常在等待其调用函数的返回，因此，此类函数的内存空间不能回收。除了当前正在执行的函数及其祖先函数，随机加载区域内其他已加载的函数称为已完成函数（Finished Function）。为识别已完成函数，本论文的基本思路是对所有已加载函数进行记录，然后根据当前调用栈信息识别出当前执行函数的所有祖先函数，最后从已加载函数中过滤所有祖先函数从而得到全部已完成函数。
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{graph/dataStructure.png}
-    \caption{fASLR系统工作流程}
+    \includegraphics[scale=0.7]{graph/dataStructure.png}
+    \caption{函数记录以及加载队列的数据结构}
 \end{figure}
 \par 具体地，FRE在每一次函数加载时会对该函数信息进行记录，用于表示函数信息的数据结构称为函数记录（Function Record）。如图4 4所示，一个函数记录包括：（i）该函数在随机加载区域的函数入口地址，（ii）该函数体的大小，（iii）函数栈帧大小，（iv）该函数已完成信息，（v）函数原始入口地址。其中，函数入口地址与函数体大小决定了该函数的加载区域范围，函数栈帧大小表示其在执行的时候所需要栈的大小，函数已完成信息表示该函数是否已完成执行，函数原始入口地址表示该函数在Flash内存中的入口地址。为对所有已加载函数进行记录，FRE用一个称为加载队列（Loading Queue）的数据结构以存储所有函数记录。
 \par 调用栈通常被用于追踪函数执行流，在ARMv8-M架构中，一般情况下最先被压入函数栈帧的是函数的返回地址。因此，一旦确定了函数的栈帧，其栈帧最底部存放的值则是该函数的返回地址，从而根据函数记录的加载区域与该返回地址进行匹配以最终确定该函数的调用函数。FRE根据调用栈中存放的函数返回地址，在加载队列的函数记录中不断回溯其调用函数直到找到所有祖先函数，并对这些祖先函数对应的函数记录进行标记。
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{graph/funcCall.png}
-    \caption{fASLR系统工作流程}
+    \includegraphics[scale=0.5]{graph/funcCall.png}
+    \caption{f3、f2以及f1的函数调用关系}
 \end{figure}
 \par 具体而言，在如图4 5所示的调用过程中，其调用栈帧图如图4 6所示，当函数$f_0$被调用从而触发HardFault异常处理时，硬件自动将产生异常前的上下文信息通过异常栈帧保存，异常栈帧有固定大小$s_e$。FRE通过读取非安全世界的栈指针寄存器获得当前应用程序的栈指针SP并通过异常栈帧获得当前函数的返回地址$R_0$。此时，由于当前函数未被执行，栈上的第一个函数栈帧属于当前函数的调用函数$f_1$，其栈帧顶部地址$T_1=SP+s_e$。为获取$f_1$的调用函数，则需要获取其栈帧大小从而得到其函数返回地址，因此FRE需要定位$f_1$对应的函数记录。它对加载队列中的函数记录进行扫描直到$R_0$恰在某一函数记录对应的加载区域内，则该函数记录所对应的函数即为$f_1$。然后，FRE根据$f_1$的栈帧大小$s_1$可以确定$f_1$的调用函数$f_2$的栈帧顶部地址$T_2=T_1+s_1$。由于$f_1$的返回地址存放在其栈帧底部，即与$f_2$栈帧顶部$T_2$相邻，因此通过$T_2$可以得到$f_1$的返回地址$R_1$。同样的，根据$R_1$和$T_2$可以从加载队列中得到$f_2$的函数记录、$T_3$以及$f_2$的返回地址$R_2$。重复上述过程，FRE可以根据调用栈帧展开得到当前函数的所有祖先函数$f_1、f_2、f_3……f_n$，并在加载队列中对其函数记录标记为已完成。
 \subparagraph{基于函数级缓存的内存回收}
 \par 基于函数级缓存的内存回收机制的目标是提高随机加载区域内存利用率以优化系统性能。其基本思路是尽可能的将已加载函数放置在随机加载区域，将其作为FRE函数加载时的函数级“缓存”。
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{graph/stackFrame.png}
-    \caption{fASLR系统工作流程}
+    \includegraphics[scale=0.7]{graph/stackFrame.png}
+    \caption{函数调用栈帧结构}
 \end{figure}
 \par 具体地，FRE使用函数记录保存已加载函数信息，并将其放入加载队列，该加载队列即为函数缓存。当FRE对当前函数进行加载时，它首先通过异常栈帧获得函数的原始入口地址，随后通过该地址与加载队列中的函数记录进行匹配，从而判断该函数是否已存在缓存中。若是，则称为函数缓存命中（Function Cache Hit），此情况下FRE不再对该函数进行随机化加载，而是直接根据函数记录得到该函数在随机加载区域的函数入口地址并恢复该函数的执行。若不是，则称为函数缓存缺失（Function Cache Miss），此情况下FRE按照原执行流程对该函数进行随机化加载。在函数级缓存基础上，为进一步减少函数加载次数，提升系统性能，本论文设计了函数调用重定向以及函数内存按需清理。
 \par 函数调用重定向：函数调用重定向是通过优化重复函数调用以减少重复的函数加载。其基本思路是针对当前已被加载的函数，对其被调用点（即该函数的调用函数调用该函数的指令所在位置）对应的函数入口地址值进行重写，使该函数调用所指向的函数入口地址由该函数在Flash上的对应地址变为在随机加载区域的对应地址。具体地，当函数调用触发FRE的随机加载机制时，FRE会判断该函数是否已在函数缓存中，若是，则说明该函数目前正在被重复加载。因此，FRE通过异常栈帧找到该函数的返回地址，并由此找到该函数的被调用点并对该调用点对应的函数入口地址值进行重写使其指向该函数在随机加载区域的函数入口地址。至此，下一次对该函数的调用则会直接跳转至随机加载区域而不触发FRE。举例来说，如图4 7所示，在系统运行过程中函数A将会重复调用函数B，函数B在随机加载区域的加载地址为0x20002c00，在未进行函数调用重定向时，函数A每次对函数B的调用都将会触发MPU异常并经由FRE对其进行加载并执行。在启用函数调用重定向的fASLR情况下，在函数A第二次调用函数B时，FRE根据函数的函数入口地址查找发现函数B的函数记录已存在函数缓存中，随后FRE根据异常栈帧中LR寄存器的值以获得函数A调用函数B的指令位置，即blx指令的下一个指令所在的地址，FRE对该blx指令的机器码进行解码得到其跳转寄存器为R3，然后FRE向上遍历寻找对R3的赋值指令（图4 7中的movw以及movt指令）并对其进行重新编码以将其跳转地址改为函数B在随机加载区域的加载地址，修改完成后，函数A对函数B的调用将会被直接重定向至随机加载区域而不再触发MPU异常，从而大大减少了异常触发的频率，极大减少了其所带来的性能开销。
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{graph/redirection.png}
-    \caption{fASLR系统工作流程}
+    \includegraphics[scale=0.5]{graph/redirection.png}
+    \caption{函数调用重定向}
 \end{figure}
 \par 此外，由于FRE可能随时对某个函数内存进行回收，对该函数的被调用点进行重写则会使下一次调用该函数时跳转至无效的函数入口，从而导致意想不到的后果。因此，FRE构建一个重写链表（Rewriting List）用于统一保存所有重写的信息（重写的位置及其原值），并在函数内存回收前根据该重写链表对重写过的调用点进行还原。
 \par 函数内存按需清理：函数内存按需清理是为保证在有足够内存用于函数随机化加载的情况下尽可能减少内存回收的次数，通过提高函数缓存利用率以减少函数加载次数。FRE仅在当前随机加载区域内存不足以加载当前函数时才会执行内存回收。在对函数进行随机化加载前，FRE首先检查是否有足够内存加载该函数。若没有，FRE会根据重写链表还原被重写的调用点，然后利用基于栈的函数完成识别机制在函数缓存（即加载队列）中对所有已完成函数进行标记，最后将函数缓存中所有标记的函数执行内存回收并更新函数缓存。
@@ -398,16 +416,16 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \par 实时操作系统（RTOS）是一种能够以足够快的速度接受并处理外界事件或数据的操作系统。它的主要特点是能够在规定的时间范围内控制生产过程或快速响应处理系统，并协调管理所有实时任务的运行。FreeRTOS是一款轻量级的开源实时操作系统，具有较小的内存占用和快速的任务切换速度，适用于资源受限的嵌入式系统。并且FreeRTOS具备良好的可移植性，可以在多种处理器架构和开发环境中使用，支持多种编译器和开发工具链。总的来说，FreeRTOS是构建高效、可靠和实时响应的嵌入式系统的理想选择。
 
 \begin{itemize}
-\item[(1)] 下载源码：FreeRTOS 是一款遵循 GPLv2+ 许可协议的开源免费实时操作系统。直接从 FreeRTOS 官网下载源码。下载完成后，在项目文件夹下创建一个名为 FreeRTOS 的文件夹。FreeRTOS 源码包括 .c 文件（FreeRTOS 源码文件）、include 文件夹（相关头文件）、portable 文件夹（与编译器相关的文件夹，在不同的编译器中使用不同的支持文件）以及 MemMang 文件夹（与内存管理相关的文件夹）。此外，还有一个名为 FreeRTOSConfig.h 的文件，它是 FreeRTOS 的配置文件。
+    \item[(1)] 下载源码：FreeRTOS 是一款遵循 GPLv2+ 许可协议的开源免费实时操作系统。直接从 FreeRTOS 官网下载源码。下载完成后，在项目文件夹下创建一个名为 FreeRTOS 的文件夹。FreeRTOS 源码包括 .c 文件（FreeRTOS 源码文件）、include 文件夹（相关头文件）、portable 文件夹（与编译器相关的文件夹，在不同的编译器中使用不同的支持文件）以及 MemMang 文件夹（与内存管理相关的文件夹）。此外，还有一个名为 FreeRTOSConfig.h 的文件，它是 FreeRTOS 的配置文件。
 
-\item[(2)] 将源码中的 .c 文件、include 文件夹和 portable 文件夹拷贝至创建的 FreeRTOS 文件夹中。在 portable 文件夹中，只保留 GCC 文件夹和 MemMang 文件夹，然后只保留 GCC 文件夹中的 ARM\_CM33 文件夹，以及 MemMang 文件夹中的 heap4.c 文件。接下来，将 Demo 文件夹下对应开发板的 FreeRTOSConfig.h 文件拷贝至项目的 include 文件夹中。
+    \item[(2)] 将源码中的 .c 文件、include 文件夹和 portable 文件夹拷贝至创建的 FreeRTOS 文件夹中。在 portable 文件夹中，只保留 GCC 文件夹和 MemMang 文件夹，然后只保留 GCC 文件夹中的 ARM\_CM33 文件夹，以及 MemMang 文件夹中的 heap4.c 文件。接下来，将 Demo 文件夹下对应开发板的 FreeRTOSConfig.h 文件拷贝至项目的 include 文件夹中。
 
-\item[(3)] 配置 FreeRTOSConfig.h 文件：
-\begin{itemize}
-\item[(a)] 将 configENABLE\_TRUSTZONE 设置为 1，以支持 TrustZone 模式。
-\item[(b)] 将 configENABLE\_MPU 设置为 1，以支持内存保护单元（MPU）。
-\item[(c)] 注释掉原有项目自带的一些中断处理函数，以使用 FreeRTOS 提供的中断处理函数，例如 SysTick\_Handler、SVC\_Handler 等。
-\end{itemize}
+    \item[(3)] 配置 FreeRTOSConfig.h 文件：
+        \begin{itemize}
+            \item[(a)] 将 configENABLE\_TRUSTZONE 设置为 1，以支持 TrustZone 模式。
+            \item[(b)] 将 configENABLE\_MPU 设置为 1，以支持内存保护单元（MPU）。
+            \item[(c)] 注释掉原有项目自带的一些中断处理函数，以使用 FreeRTOS 提供的中断处理函数，例如 SysTick\_Handler、SVC\_Handler 等。
+        \end{itemize}
 \end{itemize}
 
 \subsection{实验成果展示}
