@@ -9,9 +9,7 @@
 \usepackage{float}
 \usepackage{amsmath}
 \usepackage{url}
-
-\bibliographystyle{unsrt}
-
+\usepackage{listings}
 \numberwithin{figure}{section}
 
 \fancypagestyle{emptyStyle}
@@ -46,6 +44,7 @@
     \renewcommand{\headrulewidth}{0pt}
     \renewcommand{\footrulewidth}{0pt}
 }
+
 \setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
@@ -83,6 +82,35 @@ hang = true,
 \title{\Huge\textbf{2023年全国大学生信息安全竞赛\\作品报告}}
 
 \begin{document}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{
+    backgroundcolor=\color{lightgray},
+    basicstyle = \footnotesize,
+    breakatwhitespace = false,
+    breaklines = true,
+    captionpos = b,
+    commentstyle = \color{mygreen}\bfseries,
+    extendedchars = false,
+    frame =shadowbox,
+    framerule=0.5pt,
+    keepspaces=true,
+    keywordstyle=\color{blue}\bfseries, % keyword style
+    language = C++,                     % the language of code
+    otherkeywords={string},
+    numbers=left,
+    numbersep=5pt,
+    numberstyle=\tiny\color{mygray},
+    rulecolor=\color{black},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    stepnumber=1,
+    stringstyle=\color{mymauve},        % string literal style
+    tabsize=2,
+    title=\lstname
+}
 \pagestyle{emptyStyle}
 \maketitle
 \vspace{6cm}
@@ -362,7 +390,7 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \end{figure}
 
 \paragraph{请求阶段}
-\par 客户端首先向 TF-M 提供的API接口发送请求。这些API接口包括tfm\_spm\_request(), tfm\_ns\_interface\_dispatch(), tfm\_secure\_api\_call()等。客户端发送的请求中包含要调用的安全服务的标识符，以及传递给安全服务的参数等信息，这些参数信息可以包括数据结构、指针等。之后，TF-M内核会接收客户端发送的请求，并在请求合法性验证通过后，根据请求中指定的服务标识符，选择相应的安全服务进行调用。在完成安全服务调用后，TF-M 内核会向客户端返回相应的结果，其中可能包括表示安全服务调用状态的状态码、加解密后的数据、安全服务抛出的异常或中断等。客户端可以通过 API 接口获取 TF-M内核返回的结果信息。
+\par 客户端首先向 TF-M 提供的API接口发送请求。这些API接口包括tfm\_spm\_request(), tfm\_ns\_interface\_dispatch(), tfm\_secure\_api\_call()等。客户端发送的请求中包含要调用的安全服务的标识符，以及传递给安全服务的参数等信息，这些参数信息可以包括数据结构、指针等。之后，TF-M内核会接收客户端发送的请求，并在请求合法性验证通过后，根据请求中指定的服务标识符，选择相应的安全服务进行调用。在完成安全服务调用后，TF-M 内核会向客户端返回相应的结果，其中可能包括表示安全服务调用状态的状态码、加解密���的数据、安全服务抛出的异常或中断等。客户端可以通过 API 接口获取 TF-M内核返回的结果信息。
 \par 上述过程中，TF-M内核在接收到API调用请求后，为防止有攻击者通过构造参数等方式对安全服务进行恶意调用，利用安全服务以访问安全世界的重要数据，会首先检查客户端的请求是否合法，检查包括以下内容：
 \begin{itemize}
     \item 验证请求的来源：TF-M core会验证请求的来源，确保请求来自于受信任的客户端。这个过程可以通过验证请求中包含的认证信息，例如数字签名、证书等方式来完成。
@@ -379,7 +407,7 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \paragraph{响应阶段}
 \par 在安全服务执行完成后，安全分区将执行结果打包成一个响应消息。响应消息包括响应码、执行结果以及其他必要的信息。之后，安全分区使用安全通信机制将响应消息发送回TF-M内核。TF-M内核接收到安全的响应消息后，首先对其进行验证。验证包括检查消息的签名和校验和，以确保消息的完整性和真实性。如果消息验证失败，则TF-M内核会丢弃消息并返回错误码。
 \par 如果消息验证成功，则TF-M内核将解包响应消息，获取其中的执行结果和其他相关信息。最后，TF-M内核将响应结果返回给客户端。客户端收到响应结果后，可以进行下一步操作。
-\par 需要注意的是，TF-M内核在处理响应消息时，需要使用与请求消息相同的安全通信机制。这是因为安全通信机制是建立在会话级别的，如果使用不同的通信机制，会导致安全通信中断，从而使得通信变得不可靠。
+\par 需要注意的是，TF-M内核在处理响应消息时，需要使用与请求消息相同的安全通信机制。这是因为安全通信机制是建立在会话级别的，如果使用不同的通信机制，��导致安全通信中断，从而使得通信变得不可靠。
 
 \subsubsection{基于 STM32L562E-DK 的 FreeRTOS 实时操作系统部署}
 \par 实时操作系统（RTOS）是一种能够以足够快的速度接受并处理外界事件或数据的操作系统。它的主要特点是能够在规定的时间范围内控制生产过程或快速响应处理系统，并协调管理所有实时任务的运行。FreeRTOS是一款轻量级的开源实时操作系统，具有较小的内存占用和快速的任务切换速度，适用于资源受限的嵌入式系统。并且FreeRTOS具备良好的可移植性，可以在多种处理器架构和开发环境中使用，支持多种编译器和开发工具链。总的来说，FreeRTOS是构建高效、可靠和实时响应的嵌入式系统的理想选择。
@@ -396,7 +424,59 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
             \item[(c)] 注释掉原有项目自带的一些中断处理函数，以使用 FreeRTOS 提供的中断处理函数，例如 SysTick\_Handler、SVC\_Handler 等。
         \end{itemize}
 \end{itemize}
+\subsubsection{基于qemu模拟器运行的TrustedFirmware-M及自定义的安全服务}
+\paragraph{简介}
+\subparagraph{QEMU简介}
+\par qemu是一个开源的仿真器，可以模拟多种CPU架构，包括ARM，MIPS，x86等。在本项目中，为了研究TF-M的架构和安全服务，而不是局限于设备的复杂硬件，前期我们基于qemu模拟ARM Contex-M33内核以运行TrustedFirmware-M。
+\subparagraph{调试工具GDB}
+因为本项目是使用gcc-arm-none-eabi工具链编译的，所以我们使用gdb作为调试工具。qemu会在调试模式下，开启一个gdb server, 我们可以通过vscode ssh远程连接到虚拟机，并通过gdb监听本地gdb server，实现对qemu的调试。
+\paragraph{自定义的安全分区}
+\subparagraph{介绍}
+安全服务是一种执行环境，为Root of Trust (RoT)服务提供以下功能：
+\begin{itemize}
+    \item 访问资源，保护其自身的代码和数据。
+    \item 与系统中的其他组件进行交互的机制。
+    \item 每个安全分区是执行的最小单元，并具有隔离功能。 TF-M支持添加自己的安全分区，本项目中我们添加了一个简单的安全分区，用于测试非安全区与安全区的通信。
 
+\end{itemize}
+\subparagraph{实现}
+\par 代码组织结构
+\begin{lstlisting}
+example_partition
+|-- CMakeLists.txt
+|-- tfm_example_partition.c           //核心代码
+|-- tfm_example_partition.yaml        //提供安全分区的配置信息
+|-- tfm_example_partition_api.c         
+|-- tfm_example_partition_api.h         
+|-- tfm_example_partition_secure_api.c//安全分区的API实现
+
+\end{lstlisting}
+\par 关键代码如下：
+\begin{lstlisting}[language=C]{tfm_example_partition.c}
+for(int i=0;i<1;++i)
+{
+    psa_read(msg.handle, 0, &read_buf, msg.in_size[i]);
+    LOG_INFFMT("[Example partition] Service called from client[%d]\r\n",msg.client_id);
+    LOG_INFFMT("%s\r\n",read_buf);
+            
+    psa_crypto_init();
+    psa_hash_operation_t ho=psa_hash_operation_init();
+    psa_hash_setup(&ho,PSA_ALG_SHA_256);
+            
+    psa_status_t st = psa_hash_update(&ho,(const uint8_t *)&read_buf,msg.in_size[i]-1);
+    int length=0;
+    st = psa_hash_finish(&ho,write_buf,32,&length);
+    if(st==PSA_SUCCESS)
+    {
+        LOG_INFFMT("Crypto service called successfully, sha256 for the string is:\r\n");
+        for(int k=0;k<length;++k)
+             LOG_INFFMT("%X",write_buf[k]);
+    }
+    LOG_INFFMT("\r\n");
+	psa_write(msg.handle, 0, write_buf, length);
+}
+\end{lstlisting}
+\par 基于IPC模型，安全分区可以通过$psa\_read()$函数从非安全区读取数据，然后调用$psa\_crypto\_init()$函数初始化加密服务，最后调用$psa\_hash\_finish()$函数对数据进行哈希计算，最后将计算结果通过$psa\_write()$函数写回非安全区。
 \subsection{实验成果展示}
 \section{作品测试与分析}
 \subsection{测试方案}
@@ -406,6 +486,6 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \section{总结}
 \clearpage
 \pagestyle{refStyle}
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 \bibliography{ref}
 \end{document}
