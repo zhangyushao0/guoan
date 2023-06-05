@@ -9,7 +9,7 @@
 \usepackage{pifont}
 \usepackage{float}
 \usepackage{amsmath}
-
+\usepackage{longtable}
 
 
 \usepackage{url}
@@ -465,6 +465,7 @@ ROP攻击的研究现状主要包括以下几个方面：
 \subsection{系统实现方案}
 
 \subsubsection{基于 TrustZone-M 的函数级动态随机化加载技术}
+\par 本节将会详细阐述基于 TrustZone-M 的函数级地址空间布局随机化技术fASLR的系统设计方案，具体包括：（1）设计静态信息提取机制以对函数函数信息进行收集管理；（2）设计基于 TrustZone-M 的系统安全启动机制以防止代码复用并对函数进行动态劫持；（3）设计函数级随机化加载机制以对函数进行动态随机化加载。随后，针对受限内存场景设计了函数级随机加载内存管理。其中，为对随机化所导致的碎片化内存进行高效管理，实现碎片化内存随机管理机制；为在系统运行时动态获取函数返回信息，实现基于调用栈帧展开的函数完成识别机制；为满足面向受限内存的函数随机化加载以及性能优化，实现基于函数级缓存的内存回收机制。在此基础上，本文将fASLR在SAML11 Xplained Pro开发板上部署并对其进行性能、内存资源以及运行时随机熵分布的实验评估，以验证fASLR的实际可行性。
 \paragraph{系统设计}
 \subparagraph{系统架构}
 \par 本项目的设计基于 TrustZone 的函数级地址空间布局随机化技术 fASLR（Function-based ASLR）。fASLR 的系统架构如图\ref{fig:alsr_architecture}所示，fASLR 由四个主要功能组成部分组成：（i）编译模块（Compile Module，CM），（ii）静态信息提取（Static Information Extraction，SIE），（iii）启动引擎（Boot Engine，BE），以及（iv）函数随机化引擎（Function Randomization Engine，FRE）。
@@ -554,7 +555,101 @@ ROP攻击的研究现状主要包括以下几个方面：
 \end{figure}
 \par 此外，由于FRE可能随时对某个函数内存进行回收，对该函数的被调用点进行重写则会使下一次调用该函数时跳转至无效的函数入口，从而导致意想不到的后果。因此，FRE构建一个重写链表（Rewriting List）用于统一保存所有重写的信息（重写的位置及其原值），并在函数内存回收前根据该重写链表对重写过的调用点进行还原。
 \par 函数内存按需清理：函数内存按需清理是为保证在有足够内存用于函数随机化加载的情况下尽可能减少内存回收的次数，通过提高函数缓存利用率以减少函数加载次数。FRE仅在当前随机加载区域内存不足以加载当前函数时才会执行内存回收。在对函数进行随机化加载前，FRE首先检查是否有足够内存加载该函数。若没有，FRE会根据重写链表还原被重写的调用点，然后利用基于栈的函数完成识别机制在函数缓存（即加载队列）中对所有已完成函数进行标记，最后将函数缓存中所有标记的函数执行内存回收并更新函数缓存。
+\paragraph{实验评估}
+\par 为了说明fASLR的可用性以及低开销，本项目将fASLR在Microchip 的SAML11 Xplained Pro开发板上进行部署并对其进行运行时性能、内存以及运行时随机熵分布的实验评估。SAML11是一款基于ARM Cortex-M23处理核心并搭载有TrustZone-M的SoC，它配备有64KB的Flash内存以及16KB的RAM内存。本项目使用GNU Arm Embedded Toolchain对fASLR以及非安全世界的应用程序进行编译，其中，为了使非安全世界应用程序的代码中没有使用相对寻址模式的函数调用，编译时使用了两个额外的编译标志：-mlong-calls和-fno-jump-tables，同样的，本项目对编译所用到的C库也用上述编译标志进行编译。在编译过程中，本项目使用一个Python脚本对编译得到的ELF文件进行函数信息的提取，并将其保存在Function Table中。fASLR将安全应用程序以及Function Table部署在安全世界Flash内存中，用户的应用程序被部署在非安全世界的Flash内存中。
+\par 本项目将fASLR部署在21个应用程序上并对其进行运行时性能开销、内存开销以及运行时随机熵分布的评估。其中包括一个自主研发的空气质量监测系统以及一些嵌入式领域公开的示例程序。空气质量检测系统的实物图如图\ref{physicalDrawing}所示，它包括一个SAML11开发板、空气质量检测模块PMSA003、蜂窝模块SIM7000以及电源供给模块。非安全世界的应用程序会周期性的从PMSA003获取PM2.5的数据并将该数据通过SIM7000C以MQTT协议发送至AWS IoT平台。另外二十个应用程序包括一个CoreMark Benchmark\cite{CoreMarkBenchmark}、两个Microcontroller Benchmark Cache Test和Matrix Multiply、九个BEEBS Benchmark\cite{BEEBSBenchmark}的应用程序以及Atmel官方\cite{Atmel}提供的针对SAML11的示例程序。
+\begin{figure} %\cite{Matrix}、
+    \label{physicalDrawing}
+    \centering
+    \includegraphics[scale=1]{graph/physicalDrawing.png}
+    \caption{空气质量监测系统实物图}
+\end{figure}
+\subparagraph{性能评估}
+\par fASLR所引入的性能开销主要是因为非安全世界应用程序对Flash上的函数调用时，FRE对该函数执行随机化将会产生额外的运行时间。本项目对上述21个应用程序在部署fASLR的情况下的运行时间进行记录，并将其与未部署fASLR的情况下的运行时间进行对比。本项目使用ARM处理器核心提供的SysTick定时器以记录程序的运行时间，精确度为0.01秒。由于物联网应用程序大多为一个循环程序，因此，本项目为每一个应用程序设置固定循环次数以测试其运行时性能开销。测试结果如表\ref{table1}所示，可以发现fASLR的性能开销不超过10\%，并且有14个应用程序的性能开销小于5\%。此外，本文对函数内存回收的次数进行了统计，结果表示，19个应用程序由于RAM内存限制而进行了至少一次的函数内存回收。
 
+\begin{longtable}{ccccc}
+    % \centering  % 显示位置为中间
+	\caption{fASLR性能测试结果}  % 表格标题
+	\label{table1} \\ % 用于索引表格的标签
+    % \begin{tabular}{ccccc}
+    \hline
+    应用程序                 & 清理次数 & 基准时间    & fASLR   & 性能开销    \\ \hline
+    AirqualityMonitor    & 1    & 324.79s & 327.50s & 0.83\%  \\ 
+    Coremark             & 4    & 15.62s  & 15.78s  & 1.02\%  \\ 
+    Cache Test           & 2    & 2.13s   & 2.26s   & 6.10\%  \\ 
+    Matrix Multiply      & 1    & 24.47s  & 26.13s  & 6.78\%  \\ 
+    SecureDriver         & 1    & 12.56s  & 12.64s  & 0.64\%  \\ 
+    ADC Event System     & 2    & 12.41s  & 12.54s  & 1.04\%  \\ 
+    Calendar             & 0    & 50.36s  & 50.33s  & -0.06\% \\ 
+    Light Sensor         & 1    & 24.77   & 25.36s  & 2.38\%  \\ 
+    Low Power for SAML1X & 0    & 14.60s  & 14.60s  & 0\%     \\ 
+    ADP Hello            & 1    & 9.93s   & 10.88s  & 9.57\%  \\ 
+    SAML11-CRYA          & 1    & 6.79s   & 7.35s   & 8.25\%  \\ 
+    SAML11-TrustRAM      & 1    & 1.14s   & 1.25s   & 9.65\%  \\ 
+    Beebs-crc            & 1    & 7.44s   & 7.73s   & 3.90\%  \\ 
+    Beebs-aha-mont64     & 1    & 7.30s   & 7.73s   & 3.56\%  \\ 
+    Beebs-aha-compress   & 1    & 4.50s   & 4.67s   & 3.78\%  \\ 
+    Beebs-bs             & 1    & 0.28s   & 0.29s   & 3.57\%  \\ 
+    Beebs-bubblesort     & 1    & 0.33s   & 0.35s   & 6.06\%  \\ 
+    Beebs-compress       & 2    & 2.02s   & 2.18s   & 7.92\%  \\ 
+    Beebs-md5            & 2    & 0.42s   & 0.44s   & 4.76\%  \\ 
+    Beebs-levenshiein    & 1    & 17.42s  & 17.97s  & 3.16\%  \\ 
+    Beebs-edn            & 2    & 15.96s  & 16.24s  & 1.75\%  \\ \hline
+    % \end{tabular}
+\end{longtable}
+\subparagraph{内存评估}
+\par 为评估fASLR的内存开销，本文对每个应用程序总共的函数数量以及部署fASLR前后应用程序所占内存空间大小（包括代码大小以及静态数据大小）进行对比，应用程序所占内存空间大小的变化主要来源于编译阶段的两个特殊的编译选项，其内存开销结果如表\ref{table2}所示，可以发现21个应用程序的内存开销都小于5\%。
+
+\begin{longtable}{ccccc}
+    % \centering  % 显示位置为中间
+	\caption{fASLR内存资源测试结果}
+	\label{table2} \\
+    \hline
+    应用程序                 & 总函数个数 & 基准内存大小 & fASLR & 内存开销   \\ \hline
+    AirqualityMonitor    & 148   & 41092  & 43036 & 4.73\% \\ 
+    Coremark             & 174   & 46048  & 47648 & 3.47\% \\ 
+    Cache Test           & 140   & 40228  & 41844 & 4.02\% \\ 
+    Matrix Multiply      & 145   & 40728  & 42404 & 4.12\% \\ 
+    SecureDriver         & 139   & 39544  & 41184 & 4.15\% \\ 
+    ADC Event System     & 173   & 43036  & 44640 & 3.73\% \\ 
+    Calendar             & 97    & 36780  & 36808 & 0.08\% \\ 
+    Light Sensor         & 132   & 40496  & 40528 & 0.08\% \\ 
+    Low Power for SAML1X & 67    & 34136  & 34164 & 0.08\% \\ 
+    ADP Hello            & 99    & 38072  & 38316 & 0.64\% \\ 
+    SAML11-CRYA          & 143   & 41368  & 43012 & 3.97\% \\ 
+    SAML11-TrustRAM      & 142   & 39896  & 41500 & 4.02\% \\ 
+    Beebs-crc            & 138   & 39944  & 41492 & 3.88\% \\ 
+    Beebs-aha-mont64     & 142   & 40476  & 42028 & 3.83\% \\ 
+    Beebs-aha-compress   & 140   & 39944  & 41492 & 3.88\% \\ 
+    Beebs-bs             & 137   & 39344  & 40896 & 3.94\% \\ 
+    Beebs-bubblesort     & 137   & 39932  & 40892 & 2.40\% \\ 
+    Beebs-compress       & 143   & 40808  & 42360 & 3.80\% \\ 
+    Beebs-md5            & 137   & 41552  & 43100 & 3.73\% \\ 
+    Beebs-levenshiein    & 138   & 39708  & 41348 & 4.13\% \\ 
+    Beebs-edn            & 144   & 42112  & 43736 & 3.86\% \\ \hline
+\end{longtable}
+
+\subparagraph{运行时随机熵分布评估}
+\par 由于攻击者可能使用暴力破解攻击以绕过fASLR并实行代码复用攻击，fASLR通过一下两种方式以抵御暴力破解攻击：（1）fASLR通过对Flash内存上的函数设置不可执行，保证只有在随机加载区域的函数可以执行，从而限制了运行时可以被代码复用的函数数量。（2）即使攻击者能在随机加载区域的函数中找到代码复用攻击所需要所有gadgets，攻击者必须需要一次猜对所有gadgets所在的位置。公式（4）给出了随机加载区域的所有可能的函数布局数量。其中k表示随机加载区域内已加载的函数个数，V为随机加载区域剩余的内存空间大小的一半（ARMv8-M架构下只允许函数入口地址为偶数），随机加载区域剩余内存空间可以被表示为V个空闲单元，每个空闲单元为2字节，若随机加载区域剩余内存大小为64KB，则V为32K。
+\begin{equation}
+    C = k!\tbinom{V+k}{k}
+\end{equation}
+
+\par 本文假设随机加载区域剩余内存空间足够放置k个函数，如果所有的剩余空闲块都不足以加载当前函数，则可以执行块合并操作以消除块管理机制导致的内存碎片化。攻击者需要面对的是在保证剩余空间为V个空闲单元的情况下插入k个函数所有可能的组合情况，该组合个数可以通过二项式系数$\tbinom{V+k}{k}$与k!相乘获得，k!表示k个函数都不相同。举例来说，如果k=5且V=100，那么其总的组合个数为：
+\begin{equation}
+    5!\tbinom{100+5}{5}=1.159e+10
+\end{equation}
+\par 函数在随机加载区域的布局概率与C互为倒数，即概率P=1/C，公式（6）给出了随机化过程中的随机熵H。
+\begin{equation}
+    H=-\sum_{i=1}^C P\log_2 P = -\sum_{i=1}^{C} \frac{1}{C}\log_2 \frac{1}{C} = \log_2 C
+\end{equation}
+\par 在实验测试过程中，由于函数随机记载区域的剩余空间大小以及已加载函数的个数随着程序的运行而动态变化，本项目对每一个测试程序随机熵的变化进行跟踪并用箱线图对其进行记录，程序的序号与表4 1中程序的顺序相对应。图\ref{randomEntropy}展示了21个应用程序对应的运行时随机熵分布，从结果可以看到最小的平均随机熵为80左右，对于暴力破解攻击来说该解空间依旧十分巨大。
+\begin{figure}[H]
+    \label{randomEntropy}
+    \centering
+    \includegraphics[scale=0.7]{graph/randomEntropy.png}
+    \caption{21个应用程序的随机熵分布图}
+\end{figure}
 
 \paragraph{自动化脚本ELF-To-FUNCS}
 \subparagraph{ELF-To-FUNCS的简介}
@@ -684,7 +779,7 @@ Elf32_Half st_shndx;
 \par 依据上例可见，本脚本成功修改函数表，具有可行性。
 
 \subsubsection{面向实时操作系统 FreeRTOS 的函数级地址空间布局随机化部署}
-\par 本节需要在非安全世界中部署 FreeRTOS 操作系统，FreeRTOS 操作系统会在非安全世界创建任务并运行，从而触发安全世界的函数随机化安全服务，从而实现对非安全世界的函数级地址空间随机化。
+\par 本节需要在非安全世界中部署 FreeRTOS 操作系统，FreeRTOS 操作系统会在非安全世界创建任务并运行，从而触发安全世界的函数随机化安全服务，从而实现对非安全世界的函数实现地址空间随机化。
 \paragraph{FreeRTOS 简介}
 \par 实时操作系统（RTOS）是一种能够以足够快的速度接受并处理外界事件或数据的操作系统。它的主要特点是能够在规定的时间范围内控制生产过程或快速响应处理系统，并协调管理所有实时任务的运行。FreeRTOS是一款轻量级的开源实时操作系统，具有较小的内存占用和快速的任务切换速度，适用于资源受限的嵌入式系统。并且FreeRTOS具备良好的可移植性，可以在多种处理器架构和开发环境中使用，支持多种编译器和开发工具链。总的来说，FreeRTOS是构建高效、可靠和实时响应的嵌入式系统的理想选择。
 \paragraph{FreeRTOS 在非安全世界的部署}
