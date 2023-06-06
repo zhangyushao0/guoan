@@ -49,7 +49,7 @@
     \renewcommand{\headrulewidth}{0pt}
     \renewcommand{\footrulewidth}{0pt}
 }
-\setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
+%\setCJKmainfont{SimSun}[AutoFakeBold,AutoFakeSlant]
 \setmainfont{TeX Gyre Termes}
 \linespread{1.5}
 \setcounter{tocdepth}{3}
@@ -113,7 +113,9 @@ hang = true,
     stepnumber=1,
     stringstyle=\color{mymauve},        % string literal style
     tabsize=2,
-    title=\lstname
+    title=\lstname,
+    escapeinside={@}{@},
+    texcl=true,
 }
 \pagestyle{emptyStyle}
 \maketitle
@@ -148,7 +150,7 @@ hang = true,
 \subsection{作品背景}
 \par 近年来，伴随着信息技术的飞速发展，以智能家居、智慧交通、智慧医疗等为应用场景的物联网产业得到了迅猛发展。与此同时，物联网设备的数量也在飞速增长。到2020年底，全球物联网设备连接，如联网的汽车、智能家居设备、联网的工业设备等，数量达到了117亿，约占全球的54\%，首次超过了非物联网设备连接，如智能手机、笔记本电脑和计算机等。作为全球最大的物联网市场，中国在这一领域更是处于领先地位。到目前为止，已投入使用的物联网设备数量已经超过了144亿，预计到2025年物联网设备数量将达到270亿。
 \par 虽然物联网的发展已渐成规模，但其安全问题也越来越突出。从物联网设备的角度来看，很多物联网设备是基于微控制器（Micro Controller Unit，MCU）实现的嵌入式系统，比如车载控制设备、智能锁具、无人机、可植入医疗设备等。与通用系统一样，由于嵌入式系统硬件设计不当或软件开发不当，使运行在嵌入式系统上的软件通常存在不同类型的安全漏洞，进而引发一系列的安全问题。自从2017年以来，上百个嵌入式系统的安全漏洞已经在NVD平台上被披露出来，对设备安全和用户隐私造成了严重影响。例如，谷歌Project Zero团队发现部分手机搭载的WiFi模块漏洞对用户手机造成安全威胁；家庭安防产品Ring被曝出存在可以让攻击者监控用户家庭的安全漏洞等。随着嵌入式系统安全的重要性不断提高，维护嵌入式系统的安全变得至关重要。
-\par 深入研究嵌入式系统的安全威胁后发现，嵌入式系统的安全威胁很大一部分来自二进制的内存破坏攻击，主要包括代码破坏攻击（Code Corruption Attack），控制流劫持攻击（Control-flow Hijack Attack），面向数据的攻击（Data-only Attack）以及信息泄露攻击（Information Leak Attack）。其中控制流劫持攻击最为常见，例如ROP攻击等。现有针对控制流劫持攻击的防御中，主要以控制流完整性保护技术以及地址空间信息隐藏技术最具代表性。但由于嵌入式系统其低功耗、低成本的的要求，其硬件资源受到了很大的限制，导致在通用系统中的防御机制无法直接部署，尤其是基于8位，16位，32位微控制器的嵌入式系统。这些低端嵌入式系统大多处理器工作频率在100MHz以下，在存储上只有几百KB的Flash以及几十KB的RAM，并且它们普遍不支持内存管理单元（Memory Management Unit，MMU）。同时，运行在这些设备中的嵌入式系统软件一般用 C/C++语言编写实现，因此，与通用系统一样，这些嵌入式系统软件易受到内存破坏攻击，进而引发一系列的安全问题，例如攻击者可以利用内存破坏漏洞来向受攻击的应用程序中注入恶意代码，从而导致代码执行漏洞。这种攻击可能会让攻击者控制设备、窃取数据或对系统进行其他恶意行为。除此之外，还可能产生拒绝服务攻击，系统提权，数据泄露等一些列安全问题。因此，现有的内存破坏防御机制无法直接应用于低端嵌入式系统，而低端嵌入式系统尚缺乏有效的内存破坏防御机制，使其安全性受到严重威胁。
+\par 深入研究嵌入式系统的安全威胁后发现，嵌入式系统的安全威胁很大一部分来自二进制的内存破坏攻击，主要包括代码破坏攻击（Code Corruption Attack），控制流劫持攻击（Control-flow Hijack Attack），面向数据的攻击（Data-only Attack）以及信息泄露攻击（Information Leak Attack）。其中控制流劫持攻击最为常见，例如ROP攻击等。ROP攻击是利用程序空间已有指令序列，通过覆盖栈上的函数返回地址串联起一系列的gadgets(一段以返回指令结尾的代码段)，将程序控制流转向攻击程序流的攻击方法。在通用系统中，已有许多防御机制被部署以防御ROP攻击，如DEP（Data Executable Prevention），栈保护机制，代码多样化（Code Diversification），地址空间布局随机化（Address Space Layout Randomlization，ASLR），内存只可执行（Execute Only Memory，XOM），指令集随机化（Instruction Set Randomization，ISR）等。现有针对控制流劫持攻击的防御中，主要以控制流完整性保护技术以及地址空间信息隐藏技术最具代表性。但由于嵌入式系统其低功耗、低成本的的要求，其硬件资源受到了很大的限制，导致在通用系统中的防御机制无法直接部署，尤其是基于8位，16位，32位微控制器的嵌入式系统。这些低端嵌入式系统大多处理器工作频率在100MHz以下，在存储上只有几百KB的Flash以及几十KB的RAM，并且它们普遍不支持内存管理单元（Memory Management Unit，MMU）。同时，运行在这些设备中的嵌入式系统软件一般用 C/C++语言编写实现，因此，与通用系统一样，这些嵌入式系统软件易受到内存破坏攻击，进而引发一系列的安全问题，例如攻击者可以利用内存破坏漏洞来向受攻击的应用程序中注入恶意代码，从而导致代码执行漏洞。这种攻击可能会让攻击者控制设备、窃取数据或对系统进行其他恶意行为。除此之外，还可能产生拒绝服务攻击，系统提权，数据泄露等一些列安全问题。因此，现有的内存破坏防御机制无法直接应用于低端嵌入式系统，而低端嵌入式系统尚缺乏有效的内存破坏防御机制，使其安全性受到严重威胁。
 \par 一般来说，可信执行环境由可信执行环境操作系统（Trusted Execution Environment Operating System，TEE OS）以及安全服务（或称为TA，Trusted Application）构成，可信执行环境操作系统主要为用户调用安全服务提供安全的通信机制。为了满足嵌入式系统对安全日益增长的需求，ARM在2015年提出了面向Cortex-M系列芯片的TrustZone-M技术，TrustZone-M技术将嵌入式系统软硬件等资源分为安全世界和非安全世界，安全世界可以直接访问非安全世界资源，但非安全世界不能直接访 问安全资源，其对安全世界资源的访问需要通过安全世界提供的 API。这些 API 实现了身份验证，确保安全世界资源被正确使用。严格控制非安全世界与安全世界间的访问，旨在为系统提供一个TEEOS。由于其具有灵活性，易于开发，低功耗等优势，在移动终端领域，ARM公司针对Cortex-A系列芯片提出的TrustZone技术已经在大多数智能手机上得到TEEOS的配备，例如高通实现的QSEE，华为实现的TEEOS，三星实现的Knox等，该技术主要被用来提供安全支付，指纹服务，文件保密等安全服务。但是在低端嵌入式领域，目前基于TrustZone-M技术提供TEEOS的研究较少，其中较为流行的有两个，一个是ARM公司主导的开源项目Trusted Firmware-M（TF-M），另一个是Trustonic公司研发的闭源项目Knibi-M，前者虽然开源但对实时操作系统的兼容性较差，后者不开源且目前仅支持Microchip下的SAML11系列SoC（Systemon Chip），两者都可为用户提供多种安全服务，如安全加密，安全密钥管理等，但都未提供对控制流劫持攻击的安全保护机制。
 \par 目前，有三个主要方向用于提高低端嵌入式系统的安全性：首先是利用低端嵌入式系统的硬件设施，例如采用前文提到的ARMv8-M 架构下的TrustZone-M 技术、系统调试单元和内存保护单元（Memory Protection Unit，MPU）等，实现内存隔离、内存检测和访问控制等安全防护措施。然而，由于嵌入式系统硬件的多样性，这要求系统开发者针对不同硬件环境实现相应的安全机制，导致可扩展性较差。此外，还需额外的硬件支持，从而增加成本和工程开销。第二个方向是利用编译器技术，在对代码进行词法和语法分析后，在重新编译现有嵌入式系统源码的过程中加入额外代码以实现特定的防御机制，从而提高系统安全性。例如，采用软件错误隔离（Software Fault Isolation，SFI）技术实现代码块隔离，利用代码多样化（Code Diversification）技术抵御代码复用攻击等。这种方法的优点是无需更改原有系统的软硬件，避免了成本和工程开发上的额外开销。但是，由于编译器在软件层面提高系统安全性，因此可能会给代码的执行效率和性能带来额外负担。最后一个方向是综合前两者，通常针对已有可信硬件的低端嵌入式系统。在编译过程中加强代码安全性，并将支持可信硬件的防御机制代码直接编译至目标代码，具有较好的可扩展性。由于此类方法本质上仍然基于编译器对代码进行重新编译，因此对系统开发具有较好的透明性。同时，得益于可信硬件的支持，对嵌入式系统的安全性以及性能也有较好的兼顾。
 \par 虽然已经出现了众多的安全防护技术，如StackGuard阻止栈溢出、DEP阻止代码注入等，但是每个技术只能防御某一种特定方式的攻击，要将这些技术集成在一起实现困难且开销大，而新的攻击方式还在不断出现，为了解决这些不足，研究人员提出了从另一个角度对系统进行保护的安全技术，即地址空间布局随机化（Address Space Layout Randomization，ASLR），ASLR是一种通用计算机系统安全技术，在进程的地址空间中随机放置可执行文件、库、堆和栈的基地址位置。由ASLR执行内存地址的随机布局后，攻击者不再知道所需代码片段（例如函数或ROP gadgets）实际地址，使攻击难度大大增加。ASLR不会从系统中彻底清除漏洞，而是使攻击者利用现有漏洞更加艰巨。ASLR由PaxProject在2001年作为Linux修补程序创建，实现方法是在进程加载时，对栈基地址的4-27位共24位进行随机；对包括主程序映像、静态数据区、堆这一连续区域的基地址12-27位共16位进行随机；对共享加载库地址的12-27位共16位进行随机。ASLR技术加上数据保护执行DEP构成了一个完整的系统防护方案，DEP技术迫使攻击者使用空间中现有代码，ASLR使得这些空间中现有代码地址不可确定，由此能大大降低攻击成功的概率，在当时Linux系统中得到广泛应用。并于2007年从Vista开始集成到Windows操作系统中。之后相继出现在各种主流通用操作系统中。虽然，目前针对内存破坏攻击的运行时防御机制已广泛部署在通用系统，但这些防御机制往往需要硬件支持以减少其所引入的性能开销，比如MMU等。然而，嵌入式系统由于其低功耗、低成本的的要求，使其硬件资源受到了很大的限制，ASLR技术难以实施。
@@ -306,7 +308,7 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
               \item src：开发者在使用TF-M时需要引用的文件，其中实现了TF-M的API接口，开发者可以使用这些源文件来实现TF-M的服务端代码，提供安全功能服务。
           \end{itemize}
     \item lib：用于实现基本安全功���的库代码，如加密算法和哈希函数。此文件夹中的代码是用于支持安全服务的基本库函数，如随机数生成、哈希计算、加密解密算法等。
-    \item tools：包含用于开发和调试TF-M的实用工具和脚本。例如，此文件夹中包含了与TF-M相关的调试脚本、测试脚本以及用于生成密钥和证书的工具等。
+    \item tools：包含用于开发和调试TF-M的实用工具和函数信息自动提取工具。例如，此文件夹中包含了与TF-M相关的调试工具、测试脚本以及用于生成密钥和证书的工具等。
     \item platform：包含与平台相关的代码，如设备启动代码和外设驱动程序。此文件夹中的代码是为了支持不同的硬件平台，使TF-M能够运行在不同的处理器架构和芯片上。
     \item docs：TF-M的文档，如用户手册和开发人员指南。此文件夹中的文件包括各种文档、说明、手册等，用于指导开发人员使用TF-M进行开发。
     \item cmake：用于生成TF-M构建系统的CMake文件。此文件夹中的文件用于支持TF-M的自动化构建，包括CMake脚本和Makefile文件。
@@ -441,10 +443,10 @@ ROP攻击的研究现状主要包括以下几个方面：
 \end{itemize}
 \par 鉴于低端嵌入式系统所面临的安全挑战，近年来如何提高其安全性已经引起广泛关注。目前，有三个主要方向用于提高低端嵌入式系统的安全性：首先是利用低端嵌入式系统的硬件设施，实现内存隔离、内存检测和访问控制等安全防护措施。然而，由于嵌入式系统硬件的多样性，这要求系统开发者针对不同硬件���境实现相应的安全机制，导致可扩展性较差。此外，还需额外的硬件支持，从而增加成本和工程开销。第二个方向是利用编译器技术，在对代码进行词法和语法分析后，在重新编译现有嵌入式系统源码的过程中加入额外代码以实现特定的防御机制，从而提高系统安全性。这种方法的优点是无需更改原有系统的软硬件，避免了成本和工程开发上的额外开销。但是，由于编译器在软件层面提高系统安全性，因此可能会给代码的执行效率和性能带来额外负担。
 \par 最后一个方向是综合前两者，通常针对已有可信硬件的低端嵌入式系统。在编译过程中加强代码安全性，并将支持可信硬件的防御机制代码直接编译至目标代码，具有较好的可扩展性。由于此类方法本质上仍然基于编译器对代码进行重新编译，因此对系统开发具有较好的透明性。同时，得益于可信硬件的支持，对嵌入式系统的安全性以及性能也有较好的兼顾。 
-\par 本项目借鉴第三个方向的思路，针对低端嵌入式系统的控制流劫持攻击设计实现了基于ARM TrustZone-M 的函数级动态随机加载技术。我们对现有实时操作系统FreeRTOS以及可信执行环境操作系统Trusted Firmware-M进行了针对性的设计。利用脚本实现对系统以及函数信息的高效收集与灵活管理，实现函数运行时的实时状态感知。同时在FreeRTOS和Trusted Firmware-M源代码的基础上进行修改，在安全世界中引入地址空间布局随机化机制，使每个函数能够被加载至随机化区域并恢复运行。之后，移植Trusted Firmware-M使其能够在stm32L562开发板上与FreeRTOS协作运行，并从非安全世界实现对安全世界中地址空间布局随机化服务的调用，对整个代码空间（包括用户程序以及实时操作系统内核）实现了函数级随机化，从而实现对低端嵌入式系统的全面保护。
+\par 本项目借鉴第三个方向的思路，针对低端嵌入式系统的控制流劫持攻击设计实现了基于ARM TrustZone-M 的函数级动态随机加载技术。我们对现有实时操作系统FreeRTOS以及可信执行环境操作系统Trusted Firmware-M进行了针对性的设计。利用自动化工具实现对系统以及函数信息的高效收集与灵活管理，实现函数运行时的实时状态感知。同时在FreeRTOS和Trusted Firmware-M源代码的基础上进行修改，在安全世界中引入地址空间布局随机化机制，使每个函数能够被加载至随机化区域并恢复运行。之后，移植Trusted Firmware-M使其能够在stm32L562开发板上与FreeRTOS协作运行，并从非安全世界实现对安全世界中地址空间布局随机化服务的调用，对整个代码空间（包括用户程序以及实时操作系统内核）实现了函数级随机化，从而实现对低端嵌入式系统的全面保护。
 \par 此外，本项目针对性能和内存设计了相应的优化机制。在性能方面，针对函数加载引起的性能开销问题，设计针对函数加载的缓存技术，将随机化操作较多的函数放入缓存块中，并利用缓存预取和缓存命中率提高等技术手段，以提高系统的运行效率。
 \par 在内存方面，为了解决低端嵌入式系统中内存资源受限问题，本项目还提出了一个函数级随机化内存管理机制，用来实现高效的内存管理并防御内存破坏的攻击。具体来说，这个机制通过收集函数信息并进行动态随机化加载，确保每次函数运行时的内存地址都不同，从而有效地防御了ROP攻击。此外，该项目设计内存回收机制实现了对内存资源的高效利用，减少了内存碎片的产生，提高了内存使用效率。通过这些手段，函数级随机化内存管理机制能够在保证系统安全性的同时，尽可能地减小内存开���，提高系统性能。
-\par 我们的作品针对低端嵌入式系统的控制流劫持攻击设计实现了基于 ARM TrustZone-M 的函数级动态随机加载技术。我们对现有实时操作系统 FreeRTOS 以及可信执行环境操作系统 Trusted Firmware-M 进行了针对性的设计。利用脚本实现对系统以及函数信息的高效收集与灵活管理，实现函数运行时的实时状态感知。同时在 Free RTOS 和 Trusted Firmware-M 源代码的基础上进行修改，在安全世界中引入地址空间布局随机化机制，使每个函数能够被加载至随机化区域并恢复运行。之后，移植 Trusted Firmware-M 使其能够在 stm32L562开发板上与 FreeRTOS 协作运行，并从非安全世界实现对安全世界中地址空间布局随机化服务的调用，从而对整个代码空间（包括用户程序以及实时操作系统内核）实现了函数级随机化。实现了对低端嵌入式系统的全面保护。
+\par 我们的作品针对低端嵌入式系统的控制流劫持攻击设计实现了基于 ARM TrustZone-M 的函数级动态随机加载技术。我们对现有实时操作系统 FreeRTOS 以及可信执行环境操作系统 Trusted Firmware-M 进行了针对性的设计。利用自动化工具实现对系统以及函数信息的高效收集与灵活管理，实现函数运行时的实时状态感知。同时在 Free RTOS 和 Trusted Firmware-M 源代码的基础上进行修改，在安全世界中引入地址空间布局随机化机制，使每个函数能够被加载至随机化区域并恢复运行。之后，移植 Trusted Firmware-M 使其能够在 stm32L562开发板上与 FreeRTOS 协作运行，并从非安全世界实现对安全世界中地址空间布局随机化服务的调用，从而对整个代码空间（包括用户程序以及实时操作系统内核）实现了函数级随机化。实现了对低端嵌入式系统的全面保护。
 
 \subsection{应用前景分析}
 \paragraph{保护设备安全}
@@ -456,7 +458,7 @@ ROP攻击的研究现状主要包括以下几个方面：
 嵌入式系统的特性如实时工作能力、优化的系统资源和硬件等都让它在完成特定任务时效率极高。然而，这些特性也带来了一些安全挑战，例如有限的计算能力和内存，以及无法扩展等问题，这些都使得开发人员在创建使嵌入式系统性能、稳定和安全的软件时面临着挑战​​。本作品自主设计实现了高效率，高性能的函数级地址空间布局随机化，同时，对TF-M框架与FreeRTOS的裁剪实现了执行环境的轻量化，对于大部分性能不高的嵌入式设备都有着较好的兼容性和执行效率。
 \section{作品设计与实现}
 \subsection{系统设计目标}
-\par 针对低端嵌入式系统的控制流劫持攻击设计实现了基于 ARM TrustZone-M 的函数级动态随机加载技术。我们对现有实时操作系统 FreeRTOS 以及可信执行环境操作系统 Trusted Firmware-M 进行了针对性的设计。利用脚本实现对系统以及函数信息的高效收集与灵活管理，实现函数运行时的实时状态感知。同时在 Free RTOS 和 Trusted Firmware-M 源代码的基础上进行修改，在安全世界中引入地址空间布局随机化机制，使每个函数能够被加载至随机化区域并恢复运行。之后，移植 Trusted Firmware-M 使其能够在 stm32L562开发板上与 FreeRTOS 协作运行，并从非安全世界实现对安全世界中地址空间布局随机化服务的调用，从而对整个代码空间（包括用户程序以及实时操作系统内核）实现了函数级随机化。实现了对低端嵌入式系统的全面保护。
+\par 针对低端嵌入式系统的控制流劫持攻击设计实现了基于 ARM TrustZone-M 的函数级动态随机加载技术。我们对现有实时操作系统 FreeRTOS 以及可信执行环境操作系统 Trusted Firmware-M 进行了针对性的设计。利用自动化工具实现对系统以及函数信息的高效收集与灵活管理，实现函数运行时的实时状态感知。同时在 Free RTOS 和 Trusted Firmware-M 源代码的基础上进行修改，在安全世界中引入地址空间布局随机化机制，使每个函数能够被加载至随机化区域并恢复运行。之后，移植 Trusted Firmware-M 使其能够在 stm32L562开发板上与 FreeRTOS 协作运行，并从非安全世界实现对安全世界中地址空间布局随机化服务的调用，从而对整个代码空间（包括用户程序以及实时操作系统内核）实现了函数级随机化。实现了对低端嵌入式系统的全面保护。
 \subsection{系统架构设计}
 %below is the picture of the whole system
 \begin{figure}[H]
@@ -567,10 +569,10 @@ ROP攻击的研究现状主要包括以下几个方面：
 \par 此外，由于FRE可能随时对某个函数内存进行回收，对该函数的被调用点进行重写则会使下一次调用该函数时跳转至无效的函数入口，从而导致意想不到的后果。因此，FRE构建一个重写链表（Rewriting List）用于统一保存所有重写的信息（重写的位置及其原值），并在函数内存回收前根据该重写链表对重写过的调用点进行还原。
 \par 函数内存按需清理：函数内存按需清理是为保证在有足够内存用于函数随机化加载的情况下尽可能减少内存回收的次数，通过提高函数缓存利用率以减少函数加载次数。FRE仅在当前随机加载区域内存不足以加载当前函数时才会执行内存回收。在对函数进行随机化加载前，FRE首先检查是否有足够内存加载该函数。若没有，FRE会根据重写链表还原被重写的调用点，然后利用基于栈的函数完成识别机制在函数缓存（即加载队列）中对所有已完成函数进行标记，最后将函数缓存中所有标记的函数执行内存回收并更新函数缓存。
 
-\paragraph{自动化脚本ELF-To-FUNCS}
+\paragraph{函数信息自动化提取工具ELF-To-FUNCS}
 \subparagraph{ELF-To-FUNCS的简介}
-\par 为提高工程效率，减少人工出错的可能性，我们编写了自动化脚本ELF-To-FUNCS。本脚本利用Python以及第三方库pyelftools对elf文件进行解析，并且对相应的函数信息进行提取。同时，利用提取的信息修改Function table。
-\par 由于本脚本基于跨平台编程语言Python，因此不受不同操作系统和不同环境的约束，部署简单，可移植性高。
+\par 为提高工程效率，减少人工出错的可能性，我们编写了函数信息自动化提取工具ELF-To-FUNCS。本工具利用Python以及第三方库pyelftools对elf文件进行解析，并且对相应的函数信息进行提取。同时，利用提取的信息修改Function table。
+\par 由于本工具基于跨平台编程语言Python，因此不受不同操作系统和不同环境的约束，部署简单，可移植性高。
 \subparagraph{ELF-To-FUNCS的实现}
 \par ELF (Executable and Linking Format)指可执行和可链接格式，最初是由UNIX系统实验室（USL）开发和发布的，作为应用程序二进制接口（ABI）的一部分。现在Linux、FreeBSD、macOS等许多操作系统中都有广泛的应用。参照TIS协会制定的elf标准文档1.2版本，可知elf文件主要由图\ref{elf}所示的几个部分构成。其中，在Sections中存在.symtab节和.debug节。在.symtab节中包含符号表（Symbol Table），在debug节中保存有关符号调试的信息。
 \begin{figure}
@@ -587,32 +589,42 @@ ROP攻击的研究现状主要包括以下几个方面：
     \label{sf}
 \end{figure}
 \par 并且基于符号表的结构：
-\begin{verbatim}
+% \begin{verbatim}
+%     typedef struct { 
+% Elf32_Word st_name; 
+% Elf32_Addr st_value; 
+% Elf32_Word st_size; 
+% unsigned char st_info; 
+% unsigned char st_other; 
+% Elf32_Half st_shndx; 
+% } Elf32_Sym;
+% \end{verbatim}
+\begin{lstlisting}[language=C]
     typedef struct { 
-Elf32_Word st_name; 
-Elf32_Addr st_value; 
-Elf32_Word st_size; 
-unsigned char st_info; 
-unsigned char st_other; 
-Elf32_Half st_shndx; 
-} Elf32_Sym;
-\end{verbatim}
-\par 我们就可以通过提取elf的符号表中的STT\_FUNC符号来获取函数信息，然而，对于不同的操作系统，其对elf解析的实现有所不同，因此我们采用跨平台编程语言Python作为脚本的开发工具，具体的，我们利用pyelftools中的dwarfinfo模块，获取sections中的符号表，定位到STT\_FUNC符号，找到对应的函数信息，进行提取保存。
-\par 同时，如图\ref{df}所示在本系统的elf文件中存在.debug\_frame节，debug\_frame是一种调试信息，它是用于支持栈回溯的一种数据结构。在程序崩溃或者出现异常时，栈回溯是一种快速诊断和解决问题的方法。由于程序在运行时会使用堆栈来保存临时变量和函数调用信息，因此栈回溯需要了解每个被调用函数的参数、返回地址和局部变量等信息。这些信息都保存在debug\_frame中。debug\_frame通常由两个部分组成：FDEs(Frame Description Entries)和CIEs(Common Information Entries)。CIEs包含了所有与堆栈回溯相关的通用信息，比如访问寄存器的方式、数据类型、偏移量等等。一个CIE可以对应多个FDE。FDEs包含了与具体函数相关的信息，如该函数在代码段中的起始和结束地址、stack frame layout等，它们可以通过CIEs进行索引查找。如果找到了函数对应的FDES就可以获取其起始地址，对Function table进行修改。
-\begin{figure}
-    \centering
-    \includegraphics[scale=1]{graph/debug_frame.png}
-    \caption{.debug节内容}
-    \label{df}
-\end{figure}
+        Elf32_Word st_name; 
+        Elf32_Addr st_value; 
+        Elf32_Word st_size; 
+        unsigned char st_info; 
+        unsigned char st_other; 
+        Elf32_Half st_shndx; 
+        } Elf32_Sym;
+\end{lstlisting}
+\par 我们就可以通过提取elf的符号表中的STT\_FUNC符号来获取函数信息，然而，对于不同的操作系统，其对elf解析的实现有所不同，因此我们采用跨平台编程语言Python作为开发工具，具体的，我们利用pyelftools中的dwarfinfo模块，获取sections中的符号表，定位到STT\_FUNC符号，找到对应的函数信息，进行提取保存。
+ \par 同时，在本系统的elf文件中存在.debug\_frame节，debug\_frame是一种调试信息，它是用于支持栈回溯的一种数据结构。在程序崩溃或者出现异常时，栈回溯是一种快速诊断和解决问题的方法。由于程序在运行时会使用堆栈来保存临时变量和函数调用信息，因此栈回溯需要了解每个被调用函数的参数、返回地址和局部变量等信息。这些信息都保存在debug\_frame中。debug\_frame通常由两个部分组成：FDEs(Frame Description Entries)和CIEs(Common Information Entries)。CIEs包含了所有与堆栈回溯相关的通用信息，比如访问寄存器的方式、数据类型、偏移量等等。一个CIE可以对应多个FDE。FDEs包含了与具体函数相关的信息，如该函数在代码段中的起始和结束地址、stack frame layout等，它们可以通过CIEs进行索引查找。如果找到了函数对应的FDES就可以获取其起始地址，对Function table进行修改。
+% \begin{figure}
+%     \centering
+%     \includegraphics[scale=1]{graph/debug_frame.png}
+%     \caption{.debug节内容}
+%     \label{df}
+% \end{figure}
 \par 具体的，我们利用pyelftools中的callframe模块，提取CIE和FDE信息，如图\ref{id}的‘initial\_location’即为函数首地址。
 \begin{figure}
     \centering
-    \includegraphics[scale=0.3]{graph/initial_addresspng.png}
+    \includegraphics[scale=0.3]{graph/A.png}
     \caption{FDE对应首地址}
     \label{id}
 \end{figure}
-\par 通过上述工作，我们最终将脚本整合成以下结构:
+\par 通过上述工作，我们最终工具整合成以下结构:
 \begin{itemize}
     \item config.ini：配置文件，包含重要文件的路径。
     \item ELF\_frames\_sizes.txt：用于保存提取出的函数地址以及调用帧大小信息。
@@ -621,7 +633,7 @@ Elf32_Half st_shndx;
     \item funcs.c: 样例文件，本文件为函数列表的样例。
     \item frame\_parser.py: 框架解析文件，本文件用于解析elf文件，获取相应信息。
     \item main.py: 本文件用于修改`func.c`文件。
-    \item tutorial.md: 本脚本的使用教程。
+    \item tutorial.md: 本工具的使用教程。
 \end{itemize}
 \par 在使用前只需要填写config.ini的elf文件的路径<Elfpath>和需要修改的函数表的路径<func.c Path>即可，实现对函数信息的自动化修改。
 
@@ -629,17 +641,17 @@ Elf32_Half st_shndx;
 
 \subparagraph{ELF-To-FUNCS的优势}
 \begin{itemize}
-    \item 自动化操作：本脚本可以自动地完成函数表的修改，从而减少了人工操作。在传统的手动修改中，需要对每个函数表项进行逐一修改，容易出现疏漏或者错误。而本脚本可以自动化地完成这个过程，减少了出错的可能性，同时也提高了开发效率。
-    \item 精确性高：本脚本利用 ELF 文件格式规范来定位和操作函数表，避免了手动修改过程中可能出现的错误。手动修改时，可能会误操作或者定位不准确，从而影响程序的正确性和稳定性。本脚本利用了文件格式规范，能够精确地定位和操作函数表，从而保证了修改的准确性和稳定性。
-    \item 良好的可移植性：本脚本使用跨平台编程语言Python作为开发工具，并利用其提供的第三方库pyelftools。在不同系统或者环境下都能够良好地运行，不需要对代码进行大量修改或者适配。这使得部署变得更加简单，并且提高了代码的可移植性和灵活性。
-    \item 可扩展性好：本脚本采用了良好的软件工程实践，可以根据需要进行修改和定制，以满足不同应用场景下的需求。脚本中的代码结构清晰，函数模块化，易于阅读和维护。这意味着可以在需要的情况下轻松地扩展新的功能或者修改现有的功能，从而使脚本更加适合不同的使用情境。
+    \item 自动化操作：本工具可以自动地完成函数表的修改，从而减少了人工操作。在传统的手动修改中，需要对每个函数表项进行逐一修改，容易出现疏漏或者错误。而本工具可以自动化地完成这个过程，减少了出错的可能性，同时也提高了开发效率。
+    \item 精确性高：本工具利用 ELF 文件格式规范来定位和操作函数表，避免了手动修改过程中可能出现的错误。手动修改时，可能会误操作或者定位不准确，从而影响程序的正确性和稳定性。本工具利用了文件格式规范，能够精确地定位和操作函数表，从而保证了修改的准确性和稳定性。
+    \item 良好的可移植性：本工具使用跨平台编程语言Python作为开发工具，并利用其提供的第三方库pyelftools。在不同系统或者环境下都能够良好地运行，不需要对代码进行大量修改或者适配。这使得部署变得更加简单，并且提高了代码的可移植性和灵活性。
+    \item 可扩展性好：本工具采用了良好的软件工程实践，可以根据需要进行修改和定制，以满足不同应用场景下的需求。工具中的代码结构清晰，函数模块化，易于阅读和维护。这意味着可以在需要的情况下轻松地扩展新的功能或者修改现有的功能，从而使工具更加适合不同的使用情境。
 \end{itemize}
 
 \subparagraph{ELF-To-FUNCS的应用场景}
-\par ELF-To-FUNCS主要应用于软件开发和维护领域，除了本系统中用于嵌入式开发，自动修改其函数信息。使用本脚本还可以定位到需要修改的函数表，并修改其中相应函数的指针。除此之外，在软件升级过程中，需要更新旧版本中的某些函数。使用本脚本可以方便地解析 ELF 文件，定位到函数表所在的段，并修改其中的函数指针，实现函数替换操作。并且在软件逆向工程或者漏洞挖掘过程中，需要对 ELF 文件进行修改以绕过某些安全检测或者实现某些攻击。使用本脚本可以快速定位到需要修改的函数表，插入指定的函数指针，从而达到相应的目的。
-综上，本脚本可以广泛应用于软件开发和维护领域，能够为开发人员提供便利，降低出错的可能性，并且增强了软件开发和维护的效率。
+\par ELF-To-FUNCS主要应用于软件开发和维护领域，除了本系统中用于嵌入式开发，自动修改其函数信息。使用本工具还可以定位到需要修改的函数表，并修改其中相应函数的指针。除此之外，在软件升级过程中，需要更新旧版本中的某些函数。使用本工具可以方便地解析 ELF 文件，定位到函数表所在的段，并修改其中的函数指针，实现函数替换操作。并且在软件逆向工程或者漏洞挖掘过程中，需要对 ELF 文件进行修改以绕过某些安全检测或者实现某些攻击。使用本工具可以快速定位到需要修改的函数表，插入指定的函数指针，从而达到相应的目的。
+综上，本工具可以广泛应用于软件开发和维护领域，能够为开发人员提供便利，降低出错的可能性，并且增强了软件开发和维护的效率。
 \subparagraph{ELF-To-FUNCS的实例}
-\par 现给出具体实例展示本脚本的使用流程及其可行性。
+\par 现给出具体实例展示本工具的使用流程及其可行性。
 \begin{enumerate}
     \item 填充配置文件。
           \begin{enumerate}
@@ -650,21 +662,48 @@ Elf32_Half st_shndx;
                         \caption{填充路径}
                         \label{gl}
                     \end{figure}
-              \item 如图\ref{xgq1}和图\ref{xgq2},依据函数表可知修改前`func.c`共有162个函数，并且部分地址尚未改变。
-                    \begin{figure}
-                        \centering
-                        \includegraphics[scale=1]{graph/xiugaiqian1.png}
-                        \caption{func.c修改前1}
-                        \label{xgq1}
-                    \end{figure}
-                    \begin{figure}
-                        \centering
-                        \includegraphics[scale=0.5]{graph/xiugaiqian2.png}
-                        \caption{func.c修改前2}
-                        \label{xgq2}
-                    \end{figure}
+              \item 依据函数表可知修改前`func.c`共有162个函数，并且部分地址尚未改变。
+                    % \begin{figure}
+                    %     \centering
+                    %     \includegraphics[scale=1]{graph/xiugaiqian1.png}
+                    %     \caption{func.c修改前1}
+                    %     \label{xgq1}
+                    % \end{figure}
+                    % \begin{figure}
+                    %     \centering
+                    %     \includegraphics[scale=0.5]{graph/xiugaiqian2.png}
+                    %     \caption{func.c修改前2}
+                    %     \label{xgq2}
+                    % \end{figure}
+                    \begin{lstlisting}[language=C]{func.c修改后示例}
+                        #include "funcs.h"
+                        uint32_t funcs_num=@\textcolor{red}{162}@;
+                        FUNCS_INFO funcs[@\textcolor{red}{162}@]={
+                     
+                       {
+                           .start_address=0x8100238,
+                           .size=128,
+                           .call_frame_size=0
+                       },
+                       {
+                           .start_address=0x810025c,
+                           .size=256,
+                           .call_frame_size=0
+                       },
+                       {
+                           .start_address=@\textcolor{red}{0x81002fc}@,
+                           .size=104,
+                           .call_frame_size=8
+                       },
+                       {
+                           .start_address=0x8100618,
+                           .size=72,
+                           .call_frame_size=0
+                       },}
+                                         \end{lstlisting}
+
           \end{enumerate}
-    \item 终端运行脚本
+    \item 终端运行
           \begin{enumerate}
               \item 运行结果如图\ref{yx}:
                     \begin{figure}
@@ -680,18 +719,45 @@ Elf32_Half st_shndx;
                         \caption{输出函数信息以及解析数据}
                         \label{sc}
                     \end{figure}
-              \item 如图\ref{xg1},func.c被成功修改：
-                    \begin{figure}
-                        \centering
-                        \includegraphics[scale=0.5]{graph/xiugaihou.png}
-                        \caption{func.c修改后}
-                        \label{xg1}
-                    \end{figure}
+              \item func.c被成功修改：
+                    % \begin{figure}
+                    %     \centering
+                    %     \includegraphics[scale=0.5]{graph/xiugaihou.png}
+                    %     \caption{func.c修改后}
+                    %     \label{xg1}
+                    % \end{figure}
+                    \begin{lstlisting}[language=C]{func.c修改前示例}
+   #include "funcs.h"
+   uint32_t funcs_num=@\textcolor{red}{164}@;
+   FUNCS_INFO funcs[@\textcolor{red}{164}@]={
+
+  {
+      .start_address=0x8100238,
+      .size=128,
+      .call_frame_size=0
+  },
+  {
+      .start_address=0x810025c,
+      .size=256,
+      .call_frame_size=0
+  },
+  {
+      .start_address=@\textcolor{red}{0x81002d4}@,
+      .size=104,
+      .call_frame_size=8
+  },
+  {
+      .start_address=0x8100618,
+      .size=72,
+      .call_frame_size=0
+  },}
+                    \end{lstlisting}
+
                     
                     
           \end{enumerate}
 \end{enumerate}
-\par 依据上例可见，本脚本成功修改函数表，具有可行性。
+\par 依据上例可见，本工具成功修改函数表，具有可行性。
 
 \subsubsection{面向实时操作系统 FreeRTOS 的函数级地址空间布局随机化部署}
 \par 本节需要在非安全世界中部署 FreeRTOS 操作系统，FreeRTOS 操作系统会在非安全世界创建任务并运行，从而触发安全世界的函数随机化安全服务，从而实现对非安全世界的函数实现地址空间随机化。
@@ -793,7 +859,7 @@ for(int i=0;i<1;++i)
 \par 攻击者无法利用完整 ROP 链中的 gadgets，但可以对位于 RAM 空间中 gadgets 的地址进行暴力求解。猜测只能是一次性的，若猜测错误，ROP 链则会断裂，程序执行流无法被劫持，而猜测一次成功的概率仅有 1/16KB。
 
 \subsection{测试环境搭建}
-\par 为了说明fASLR的可用性以及低开销，本项目将fASLR在Microchip 的SAML11 Xplained Pro开发板上进行部署并对其进行运行时性能、内存以及运行时随机熵分布的实验评估。SAML11是一款基于ARM Cortex-M23处理核心并搭载有TrustZone-M的SoC，它配备有64KB的Flash内存以及16KB的RAM内存。本项目使用GNU Arm Embedded Toolchain对fASLR以及非安全世界的应用程序进行编译，其中，为了使非安全世界应用程序的代码中没有使用相对寻址模式的函数调用，编译时使用了两个额外的编译标志：-mlong-calls和-fno-jump-tables，同样的，本项目对编译所用到的C库也用上述编译标志进行编译。在编译过程中，本项目使用一个Python脚本对编译得到的ELF文件进行函数信息的提取，并将其保存在Function Table中。fASLR将安全应用程序以及Function Table部署在安全世界Flash内存中，用户的应用程序被部署在非安全世界的Flash内存中。
+\par 为了说明fASLR的可用性以及低开销，本项目将fASLR在Microchip 的SAML11 Xplained Pro开发板上进行部署并对其进行运行时性能、内存以及运行时随机熵分布的实验评估。SAML11是一款基于ARM Cortex-M23处理核心并搭载有TrustZone-M的SoC，它配备有64KB的Flash内存以及16KB的RAM内存。本项目使用GNU Arm Embedded Toolchain对fASLR以及非安全世界的应用程序进行编译，其中，为了使非安全世界应用程序的代码中没有使用相对寻址模式的函数调用，编译时使用了两个额外的编译标志：-mlong-calls和-fno-jump-tables，同样的，本项目对编译所用到的C库也用上述编译标志进行编译。在编译过程中，本项目使用一个Python函数自动化提取工具对编译得到的ELF文件进行函数信息的提取，并将其保存在Function Table中。fASLR将安全应用程序以及Function Table部署在安全世界Flash内存中，用户的应用程序被部署在非安全世界的Flash内存中。
 \par 本项目将fASLR部署在21个应用程序上并对其进行运行时性能开销、内存开销以及运行时随机熵分布的评估。其中包括一个自主研发的空气质量监测系统以及一些嵌入式领域公开的示例程序。空气质量检测系统的实物图如图\ref{physicalDrawing}所示，它包括一个SAML11开发板、空气质量检测模块PMSA003、蜂窝模块SIM7000以及电源供给模块。非安全世界的应用程序会周期性的从PMSA003获取PM2.5的数据并将该数据通过SIM7000C以MQTT协议发送至AWS IoT平台。另外二十个应用程序包括一个CoreMark Benchmark\cite{CoreMarkBenchmark}、两个Microcontroller Benchmark Cache Test和Matrix Multiply、九个BEEBS Benchmark\cite{BEEBSBenchmark}的应用程序以及Atmel官方\cite{Atmel}提供的针对SAML11的示例程序。
 \begin{figure}[H] %\cite{Matrix}、
     \label{physicalDrawing}
