@@ -514,9 +514,9 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \paragraph{系统设计}
 \subparagraph{系统架构}
 \par 本作品的设计基于 TrustZone 的函数级地址空间布局随机化技术 fASLR（Function-based ASLR）。fASLR 的系统架构如图\ref{fig:alsr_architecture}所示，fASLR 由四个主要功能组成部分组成：（i）编译模块（Compile Module，CM），（ii）静态信息提取（Static Information Extraction，SIE），（iii）启动引擎（Boot Engine，BE），以及（iv）函数随机化引擎（Function Randomization Engine，FRE）。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[scale=0.5]{graph/aslr_architecture.png}
+    \includegraphics[scale=0.3]{graph/aslr_architecture.png}
     \caption{fASLR架构设计}
     \label{fig:alsr_architecture}
 \end{figure}
@@ -533,9 +533,9 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \par 运行阶段：部署 fASLR 的系统运行时，所有对 Flash 内存上函数的调用都会将该函数加载至随机加载区域并执行。具体来说，当系统运行过程中一旦有产生函数调用，系统会跳转至被调用函数 callee 进行执行，由于 callee 对应的代码存储在 MPU 所保护的 Flash 内存上，因此系统尝试执行 callee 代码时将会触发 MPU 异常处理。此时，FRE 在 MPU 异常处理中对 callee 进行随机化加载，然后将控制流从 callee 在 Flash 内存的代码转移到该函数在随机加载区域的代码并恢复 callee 的执行。类似的，在 callee 的执行过程中，由于所有 callee 产生的函数调用依然指向 Flash 内存的函数代码，因此同样会触发 FRE 对其进行随机化加载至随机加载区域并执行。在函数执行完成后，函数将会返回至随机加载区域，并继续执行其被调用位置的下一条指令。FRE 通过上述方式对所有指向 Flash 内存的函数调用进行随机化并保证函数的正常执行。
 \par 设备上电后，安全世界的 BE 对 MPU 进行相关配置然后启动非安全世界程序的 Reset Handler。Reset Handler 执行一系列的初始化操作后将会执行非安全世界的 main 函数，其中，Reset Handler 和 main 函数都会触发函数随机化加载，两个函数的函数体代码都会被 FRE 随机化加载至 RAM 内存中的随机加载区域中并执行。同样的，在 main 函数的执行过程中，一旦 main 函数中产生对 Flash 内存上函数的调用，控制流会被 FRE 所截获并对该函数进行随机化加载然后在随机加载区域恢复该函数的执行。以此类推，所有的函数都会被加载至随机随机加载区域执行。
 \par 图\ref{fig:workflow}为程序在部署fASLR情况下的系统进行函数调用时的工作流程示意图，该图展示了函数X、Y、Z之间的调用过程，调用顺序为X调用Y，Y调用Z，图中$X^{'}、Y^{'}、Z^{'}$分别对应函数X、Y、Z在随机加载区域的函数体。该流程图包括运行过程中的函数调用（\ding{172}和\ding{175}）、MPU异常处理（\ding{173}和\ding{176}）、运行时函数随机化、函数执行（\ding{174}和\ding{177}）以及函数返回（\ding{178}和\ding{179}）。该流程图假设函数X已被加载进随机加载区域并从函数$X^{'}$开始执行，当$X^{'}$调用Y时（\ding{172}）将会导致MPU异常（\ding{173}）并触发HardFault Handler中的FRE。然后FRE将Y加载至随机加载区域并将控制流转移给$Y^{'}$（\ding{174}）。在$Y^{'}$的执行过程中，$Y^{'}$将会调用Y，MPU异常再次被触发（\ding{175}）并交给FRE进行处理（\ding{176}），控制流再次转移至$Z^{'}$。当$Z^{'}$执行完成后，控制流将会从$Z^{'}$返回至$Y^{'}$，再由返回至$X^{'}$。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[scale=0.8]{graph/workflow.png}
+    \includegraphics[scale=0.4]{graph/workflow.png}
     \caption{fASLR系统工作流程}
     \label{fig:workflow}
 \end{figure}
@@ -546,9 +546,9 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \par 另一方面，由于内存回收具有一定的性能开销，选择合适的时机对内存回收不仅能够保证有足够内存用于函数加载，而且能减少内存回收次数从而降低系统的性能开销。此外，由于深度嵌入式系统中存在大量循环，循环内的函数会被不断调用。然而，对于未被回收内存的函数，任何对该函数的重复调用依然会触发异常从而导致FRE的随机化加载，频繁的函数加载会严重影响系统性能。为此，本作品设计了一种基于函数级缓存的内存回收机制，通过函数级缓存以提高内存利用率并减少函数加载次数。为减少内存回收次数，实现在合适时机对函数内存进行回收；为减少函数的重复加载，实现对已加载函数调用机制的优化。
 \subparagraph{碎片化内存随机管理}
 \par 内存管理的关键是要将随机加载区域的已用内存和空闲内存的边界进行统一高效的管理。碎片化内存随机管理机制的基本思路是将内存以块链表进行管理，以内存块的形式为函数分配大小匹配的内存。具体地，本作品采用显式空闲块链表（Implicit Free Lists）的方式对内存块进行管理。内存块的数据结构如图\ref{fig:memoryManagement}（a）所示，主要包括元数据、负载数据以及填充数据：元数据由内存块的大小、以及指向下一个内存块的指针组成；负载数据用于对函数代码的加载；填充数据用于内存对齐。为方便叙述，本文将已加载的函数所占有的内存块称为函数块，而其余的内存块则称为空闲块。本节从内存分配以及内存回收两方面对碎片化内存随机管理机制进行详细介绍。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[scale=0.3]{graph/memoryManagement.png}
+    \includegraphics[scale=0.23]{graph/memoryManagement.png}
     \caption{基于显式空闲链表的内存管理}
     \label{fig:memoryManagement}
 \end{figure}
@@ -567,32 +567,32 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \par 内存的回收过程是将函数块插入空闲块链表的过程。具体地，FRE根据函数块的地址位置，扫描空闲块链表直到找到其在空闲块链表中对应插入位置。在插入过程中，FRE先判断该函数块是否能与其前一个空闲块或者后一个空闲块合并，最终合成新的空闲块链表。
 \subparagraph{基于调用栈帧展开的函数完成识别}
 \par 基于调用栈帧展开的函数完成识别机制的目标在于从当前所有已加载的函数识别出已完成执行的函数。对于当前正在执行的函数来说，本作品将其直接调用者及其间接调用者称为祖先函数（Ancestor Function）。在系统运行过程中，当前正在执行函数的祖先函数通常在等待其调用函数的返回，因此，此类函数的内存空间不能回收。除了当前正在执行的函数及其祖先函数，随机加载区域内其他已加载的函数称为已完成函数（Finished Function）。为识别已完成函数，本作品的基本思路是对所有已加载函数进行记录，然后根据当前调用栈信息识别出当前执行函数的所有祖先函数，最后从已加载函数中过滤所有祖先函数从而得到全部已完成函数。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[scale=0.7]{graph/dataStructure.png}
+    \includegraphics[scale=0.5]{graph/dataStructure.png}
     \caption{函数记录以及加载队列的数据结构}
     \label{fig:dataStructure}
 \end{figure}
 \par 具体地，FRE在每一次函数加载时会对该函数信息进行记录，用于表示函数信息的数据结构称为函数记录（Function Record）。如图\ref{fig:dataStructure}所示，一个函数记录包括：（i）该函数在随机加载区域的函数入口地址，（ii）该函数体的大小，（iii）函数栈帧大小，（iv）该函数已完成信息，（v）函数原始入口地址。其中，函数入口地址与函数体大小决定了该函数的加载区域范围，函数栈帧大小表示其在执行的时候所需要栈的大小，函数已完成信息表示该函数是否已完成执行，函数原始入口地址表示该函数在Flash内存中的入口地址。为对所有已加载函数进行记录，FRE用一个称为加载队列（Loading Queue）的数据结构以存储所有函数记录。
 \par 调用栈通常被用于追踪函数执行流，在ARMv8-M架构中，一般情况下最先被压入函数栈帧的是函数的返回地址。因此，一旦确定了函数的栈帧，其栈帧最底部存放的值则是该函数的返回地址，从而根据函数记录的加载区域与该返回地址进行匹配以最终确定该函数的调用函数。FRE根据调用栈中存放的函数返回地址，在加载队列的函数记录中不断回溯其调用函数直到找到所有祖先函数，并对这些祖先函数对应的函数记录进行标记。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[scale=0.5]{graph/funcCall.png}
+    \includegraphics[scale=0.35]{graph/funcCall.png}
     \caption{f3、f2以及f1的函数调用关系}
     \label{fig:funcCall}
 \end{figure}
 \par 具体而言，在如图\ref{fig:funcCall}所示的调用过程中，其调用栈帧图如图\ref{fig:stackFrame}所示，当函数$f_0$被调用从而触发HardFault异常处理时，硬件自动将产生异常前的上下文信息通过异常栈帧保存，异常栈帧有固定大小$s_e$。FRE通过读取非安全世界的栈指针寄存器获得当前应用程序的栈指针SP并通过异常栈帧获得当前函数的返回地址$R_0$。此时，由于当前函数未被执行，栈上的第一个函数栈帧属于当前函数的调用函数$f_1$，其栈帧顶部地址$T_1=SP+s_e$。为获取$f_1$的调用函数，则需要获取其栈帧大小从而得到其函数返回地址，因此FRE需要定位$f_1$对应的函数记录。它对加载队列中的函数记录进行扫描直到$R_0$恰在某一函数记录对应的加载区域内，则该函数记录所对应的函数即为$f_1$。然后，FRE根据$f_1$的栈帧大小$s_1$可以确定$f_1$的调用函数$f_2$的栈帧顶部地址$T_2=T_1+s_1$。由于$f_1$的返回地址存放在其栈帧底部，即与$f_2$栈帧顶部$T_2$相邻，因此通过$T_2$可以得到$f_1$的返回地址$R_1$。同样的，根据$R_1$和$T_2$可以从加载队列中得到$f_2$的函数记录、$T_3$以及$f_2$的返回地址$R_2$。重复上述过程，FRE可以根据调用栈帧展开得到当前函数的所有祖先函数$f_1、f_2、f_3……f_n$，并在加载队列中对其函数记录标记为已完成。
 \subparagraph{基于函数级缓存的内存回收}
 \par 基于函数级缓存的内存回收机制的目标是提高随机加载区域内存利用率以优化系统性能。其基本思路是尽可能的将已加载函数放置在随机加载区域，将其作为FRE函数加载时的函数级“缓存”。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[scale=0.7]{graph/stackFrame.png}
+    \includegraphics[scale=0.4]{graph/stackFrame.png}
     \caption{函数调用栈帧结构}
     \label{fig:stackFrame}
 \end{figure}
 \par 具体地，FRE使用函数记录保存已加载函数信息，并将其放入加载队列，该加载队列即为函数缓存。当FRE对当前函数进行加载时，它首先通过异常栈帧获得函数的原始入口地址，随后通过该地址与加载队列中的函数记录进行匹配，从而判断该函数是否已存在缓存中。若是，则称为函数缓存命中（Function Cache Hit），此情况下FRE不再对该函数进行随机化加载，而是直接根据函数记录得到该函数在随机加载区域的函数入口地址并恢复该函数的执行。若不是，则称为函数缓存缺失（Function Cache Miss），此情况下FRE按照原执行流程对该函数进行随机化加载。在函数级缓存基础上，为进一步减少函数加载次数，提升系统性能，本作品设计了函数调用重定向以及函数内存按需清理。
 \par 函数调用重定向：函数调用重定向是通过优化重复函数调用以减少重复的函数加载。其基本思路是针对当前已被加载的函数，对其被调用点（即该函数的调用函数调用该函数的指令所在位置）对应的函数入口地址值进行重写，使该函数调用所指向的函数入口地址由该函数在Flash上的对应地址变为在随机加载区域的对应地址。具体地，当函数调用触发FRE的随机加载机制时，FRE会判断该函数是否已在函数缓存中，若是，则说明该函数目前正在被重复加载。因此，FRE通过异常栈帧找到该函数的返回地址，并由此找到该函数的被调用点并对该调用点对应的函数入口地址值进行重写使其指向该函数在随机加载区域的函数入口地址。至此，下一次对该函数的调用则会直接跳转至随机加载区域而不触发FRE。举例来说，如\ref{fig:redirection}所示，在系统运行过程中函数A将会重复调用函数B，函数B在随机加载区域的加载地址为0x20002c00，在未进行函数调用重定向时，函数A每次对函数B的调用都将会触发MPU异常并经由FRE对其进行加载并执行。在启用函数调用重定向的fASLR情况下，在函数A第二次调用函数B时，FRE根据函数的函数入口地址查找发现函数B的函数记录已存在函数缓存中，随后FRE根据异常栈帧中LR寄存器的值以获得函数A调用函数B的指令位置，即blx指令的下一个指令所在的地址，FRE对该blx指令的机器码进行解码得到其跳转寄存器为R3，然后FRE向上遍历寻找对R3的赋值指令（图\ref{fig:redirection}中的movw以及movt指令）并对其进行重新编码以将其跳转地址改为函数B在随机加载区域的加载地址，修改完成后，函数A对函数B的调用将会被直接重定向至随机加载区域而不再触发MPU异常，从而大大减少了异常触发的频率，极大减少了其所带来的性能开销。
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{graph/redirection.png}
     \caption{函数调用重定向}
@@ -872,9 +872,14 @@ for(int i=0;i<1;++i)
 \subsection{原型系统效果展示}
 
 \section{作品测试与分析}
+\subsection{测试环境}
+\begin{itemize}
+    \item[1)] 硬件环境：SAML11 Xplained Pro 开发板一块，STM32L562 开发板一块；
+    \item[2)] 软件环境： Qemu 模拟处理器；
+    \item[3)] 开发工具：STM32CubeIDE、VS Code；
+    \item[4)] 开发语言：C/C++、ARM Assemble、python、shell。
+\end{itemize}
 \subsection{测试方案}
-\subsubsection{测试平台}
-
 \subsubsection{安全性测试与分析}
 \paragraph{威胁模型}
 \par 假设攻击者只能在程序运行期间实行攻击。本作品不考虑对于固件的离线攻击，比如对固件的重写，对总线的监听或者内存的篡改等等。本作品认为攻击者具有利用整个非安全世界漏洞以及安全世界非特权漏洞的能力，最终可以实现对内存的任意读写，包括代码段，数据段，堆和栈，以及非安全世界的系统配置资源，只有安全世界的内核（运行于特权态）是可信的。本作品默认安全模块（Secure Module）运行在安全世界的非特权状态。
@@ -890,7 +895,7 @@ for(int i=0;i<1;++i)
 \end{figure}
 \par 攻击者无法利用完整 ROP 链中的 gadgets，但可以对位于 RAM 空间中 gadgets 的地址进行暴力求解。猜测只能是一次性的，若猜测错误，ROP 链则会断裂，程序执行流无法被劫持，而猜测一次成功的概率仅有 1/16KB。
 
-\subsection{测试环境搭建}
+\subsubsection{性能与内存开销测试}
 \par 为了说明fASLR的可用性以及低开销，本作品将fASLR在Microchip 的SAML11 Xplained Pro开发板上进行部署并对其进行运行时性能、内存以及运行时随机熵分布的实验评估。SAML11是一款基于ARM Cortex-M23处理核心并搭载有TrustZone-M的SoC，它配备有64KB的Flash内存以及16KB的RAM内存。本作品使用GNU Arm Embedded Toolchain对fASLR以及非安全世界的应用程序进行编译，其中，为了使非安全世界应用程序的代码中没有使用相对寻址模式的函数调用，编译时使用了两个额外的编译标志：-mlong-calls和-fno-jump-tables，同样的，本作品对编译所用到的C库也用上述编译标志进行编译。在编译过程中，本作品使用一个Python函数自动化提取工具对编译得到的ELF文件进行函数信息的提取，并将其保存在Function Table中。fASLR将安全应用程序以及Function Table部署在安全世界Flash内存中，用户的应用程序被部署在非安全世界的Flash内存中。
 \par 本作品将fASLR部署在21个应用程序上并对其进行运行时性能开销、内存开销以及运行时随机熵分布的评估。其中包括一个自主研发的空气质量监测系统以及一些嵌入式领域公开的示例程序。空气质量检测系统的实物图如图\ref{physicalDrawing}所示，它包括一个SAML11开发板、空气质量检测模块PMSA003、蜂窝模块SIM7000以及电源供给模块。非安全世界的应用程序会周期性的从PMSA003获取PM2.5的数据并将该数据通过SIM7000C以MQTT协议发送至AWS IoT平台。另外二十个应用程序包括一个CoreMark Benchmark\cite{CoreMarkBenchmark}、两个Microcontroller Benchmark Cache Test和Matrix Multiply、九个BEEBS Benchmark\cite{BEEBSBenchmark}的应用程序以及Atmel官方\cite{Atmel}提供的针对SAML11的示例程序。
 \begin{figure}[H] %\cite{Matrix}、
