@@ -849,7 +849,21 @@ FUNCS_INFO funcs[@\textcolor{red}{164}@]={
 \par 在成功将 FreeRTOS 实时操作系统部署到非安全世界后，我们需要对 FreeRTOS 实现函数级地址空间随机化。整个流程与上文所述的函数随机化流程相同，只是在对 FreeRTOS 进行函数随机化时，我们需要以下针对性的设计：
 \begin{itemize}
     \item 在原有函数随机化中，我们通过 msp 栈指针获取函数的返回地址，然后对其进行随机化。然而，FreeRTOS 有 msp 和 psp 两个栈指针，其中 msp 指针用于系统内核和中断服务函数，psp 指针用于用户的任务。因此，我们需要通过 bl 寄存器的值来判断当前使用的栈指针是 msp 还是 psp，从而获取函数的返回地址。
-    \begin{lstlisting}[language=C]{func.c修改后示例}
+    \begin{lstlisting}[language=C]{修改前}
+initial_msp_s=__get_MSP();
+secureportREAD_MSP_NS(msp);
+    \end{lstlisting}
+    \begin{lstlisting}[language=C]{修改后}
+uint32_t ulLRValue;
+__asm volatile("mov %0, lr" : "=r" (ulLRValue) );
+if (((ulLRValue >> 3) & 1) == 0 || ((ulLRValue >> 2)&1) == 0) {
+    initial_msp_s=__get_MSP();
+    secureportREAD_MSP_NS_aslr(sp);
+}
+else {
+    initial_msp_s = __get_PSP();
+    secureportREAD_PSP_NS_aslr(sp);
+}
     \end{lstlisting}
     \item FreeRTOS 中存在一些内联汇编代码，其中包含相对跳转指令 bl，这与作品的基本要求冲突。为了确保所有函数的跳转为绝对跳转，需要将 FreeRTOS 的内联汇编代码中的相对跳转指令 bl 修改为绝对跳转指令 blx。
 \end{itemize}
