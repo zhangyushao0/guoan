@@ -678,7 +678,7 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
         } Elf32_Sym;
 \end{lstlisting}
 \par 我们就可以通过提取elf的符号表中的STT\_FUNC符号来获取函数信息，然而，对于不同的操作系统，其对elf解析的实现有所不同，因此我们采用跨平台编程语言Python作为开发工具，具体的，我们利用pyelftools中的dwarfinfo模块，获取sections中的符号表，定位到STT\_FUNC符号，找到对应的函数信息，进行提取保存。
-\par 同时，在本系统的elf文件中存在.debug\_frame节，debug\_frame是一种调试信息，它是用于支持栈回溯的一种数据结构。在程序崩溃或者出现异常时，栈回溯是一种快速诊断和解决问题的方法。由于程序在运行时会使用堆栈来保存临时变量和函数调用信息，因此栈回溯需要了解每个被调用函数的参数、返回地址和局部变量等信息。这些信息都保存在debug\_frame中。debug\_frame通常由两个部分组成：FDEs(Frame Description Entries)和CIEs(Common Information Entries)。CIEs包含了所有与堆栈回溯相关的通用信息，比如访问寄存器的方式、数据类型、偏移量等等。一个CIE可以对应多个FDE。FDEs包含了与具体函数相关的信息，如该函数在代码段中的起始和结束地址、stack frame layout等，它们可以通过CIEs进行索引查找。如果找到了函数对应的FDES就可以获取其起始地址，对Function table进行修改。
+\par 同时，在本作品的elf文件中存在.debug\_frame节，debug\_frame是一种调试信息，它是用于支持栈回溯的一种数据结构。在程序崩溃或者出现异常时，栈回溯是一种快速诊断和解决问题的方法。由于程序在运行时会使用堆栈来保存临时变量和函数调用信息，因此栈回溯需要了解每个被调用函数的参数、返回地址和局部变量等信息。这些信息都保存在debug\_frame中。debug\_frame通常由两个部分组成：FDEs(Frame Description Entries)和CIEs(Common Information Entries)。CIEs包含了所有与堆栈回溯相关的通用信息，比如访问寄存器的方式、数据类型、偏移量等等。一个CIE可以对应多个FDE。FDEs包含了与具体函数相关的信息，如该函数在代码段中的起始和结束地址、stack frame layout等，它们可以通过CIEs进行索引查找。如果找到了函数对应的FDES就可以获取其起始地址，对Function table进行修改。
 % \begin{figure}
 %     \centering
 %     \includegraphics[scale=1]{graph/debug_frame.png}
@@ -716,9 +716,9 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
 \end{itemize}
 
 \subparagraph{ELF-To-FUNCS的应用场景}
-\par ELF-To-FUNCS主要应用于软件开发和维护领域，除了本系统中用于嵌入式开发，自动修改其函数信息。使用本工具还可以定位到需要修改的函数表，并修改其中相应函数的指针。除此之外，在软件升级过程中，需要更新旧版本中的某些函数。使用本工具可以方便地解析 ELF 文件，定位到函数表所在的段，并修改其中的函数指针，实现函数替换操作。并且在软件逆向工程或者漏洞挖掘过程中，需要对 ELF 文件进行修改以绕过某些安全检测或者实现某些攻击。使用本工具可以快速定位到需要修改的函数表，插入指定的函数指针，从而达到相应的目的。
+\par ELF-To-FUNCS主要应用于软件开发和维护领域，除了本作品中用于嵌入式开发，自动修改其函数信息。使用本工具还可以定位到需要修改的函数表，并修改其中相应函数的指针。除此之外，在软件升级过程中，需要更新旧版本中的某些函数。使用本工具可以方便地解析 ELF 文件，定位到函数表所在的段，并修改其中的函数指针，实现函数替换操作。并且在软件逆向工程或者漏洞挖掘过程中，需要对 ELF 文件进行修改以绕过某些安全检测或者实现某些攻击。使用本工具可以快速定位到需要修改的函数表，插入指定的函数指针，从而达到相应的目的。
 综上，本工具可以广泛应用于软件开发和维护领域，能够为开发人员提供便利，降低出错的可能性，并且增强了软件开发和维护的效率。
-\subparagraph{ELF-To-FUNCS的实例}
+\subparagraph{ELF-To-FUNCS的应用实例}
 \par 现给出具体实例展示本工具的使用流程及其可行性。
 \begin{enumerate}
     \item 填充配置文件。
@@ -743,7 +743,7 @@ IPC模式和SFN模式都是用于不同安全服务之间的通信和协作模�
                     %     \caption{func.c修改前2}
                     %     \label{xgq2}
                     % \end{figure}
-                    \begin{lstlisting}[language=C]{func.c修改后示例}
+                    \begin{lstlisting}[language=C]{func.c修改前示例}
 #include "funcs.h"
 uint32_t funcs_num=@\textcolor{red}{162}@;
 FUNCS_INFO funcs[@\textcolor{red}{162}@]={
@@ -794,7 +794,7 @@ FUNCS_INFO funcs[@\textcolor{red}{162}@]={
                     %     \caption{func.c修改后}
                     %     \label{xg1}
                     % \end{figure}
-                    \begin{lstlisting}[language=C]{func.c修改前示例}
+                    \begin{lstlisting}[language=C]{func.c修改后示例}
 #include "funcs.h"
 uint32_t funcs_num=@\textcolor{red}{164}@;
 FUNCS_INFO funcs[@\textcolor{red}{164}@]={
@@ -922,6 +922,14 @@ for(int i=0;i<1;++i)
 \end{lstlisting}
 \par 基于IPC模型，安全分区可以通过$psa\_read()$函数从非安全区读取数据，然后调用$psa\_crypto\_init()$函数初始化加密服务，最后调用$psa\_hash\_finish()$函数对数据进行哈希计算，最后将计算结果通过$psa\_write()$函数写回非安全区。
 \subsection{原型系统效果展示}
+\subsubsection{FASLR效果可视化网页展示}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{graph/web.png}
+    \caption{faslr可视化网页界面}
+    \label{web}
+\end{figure}
+\par 为了更清晰的显示函数在内存上的位置变化以及faslr的工作流程，我们对函数在内存中的位置进行实时获取，并通过如图\ref{web}所示的网页端进行展示。我们将非安全世界的function table显示至左侧的表格中，并根据函数的调用情况，实时展示其随机化后的位置，并展示在右侧的表格中。本例中可见，位于0x8100410的函数经过随机化加载，被加载至安全世界的0x20042720位置。
 
 \section{作品测试与分析}
 \subsection{测试环境}
