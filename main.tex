@@ -979,7 +979,8 @@ for(int i=0;i<1;++i)
 \end{figure}
 
 \subsubsection{FASLR动态实时函数网页展示平台}
-\par 为了更清晰的显示函数在内存上的位置变化以及FASLR的工作流程，我们对函数在内存中的位置进行实时获取，并通过如图\ref{web2}所示的网页端进行展示。我们将Flash内存中的函数显示至左侧的表格中，并根据函数的调用情况，借助MPU对其进行随机化，实时展示其随机化后的位置（RAM内存），并展示在右侧的表格中。
+\par 为了更清晰的显示函数在内存上的位置变化以及FASLR的工作流程，我们对函数在内存中的位置进行实时获取，并通过如图\ref{web}所示的网页端进行展示。我们将Flash内存中的函数显示至左侧的表格中，并根据函数的调用情况，借助MPU对其进行随机化，实时展示其随机化后的位置（RAM内存），并展示在右侧的表格中。
+
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.15]{graph/web1.png}
@@ -990,7 +991,7 @@ for(int i=0;i<1;++i)
     \centering
     \includegraphics[scale=0.15]{graph/web2.png}
     \caption{FASLR可视化网页界面}
-    \label{web2}
+    \label{web}
 \end{figure}
 
 
