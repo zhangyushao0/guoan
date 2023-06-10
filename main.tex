@@ -199,21 +199,21 @@ hang = true,
 \par 为了有效实施ROP攻击，攻击者需要克服一些技术挑战。首先，他们需要了解目标程序的内存布局，包括栈的结构、函数调用和返回的机制等。其次，攻击者需要能够识别和利用程序中的漏洞，例如堆栈溢出或格式化字符串漏洞，以覆盖返回地址并控制执行流程。此外，攻击者还需要解决ROP链的构建问题，确保gadgets的执行顺序和参数传递正确，以实现所需的恶意操作。
 
 \subparagraph{ROP研究现状}
-ROP攻击的研究现状主要包括以下几个方面：
-\subparagraph{漏洞利用}
+ROP攻击的研究现状主要包括以下几个方面：\\
+\textbf{i. 漏洞利用}
 \par ROP攻击最初是在针对堆栈溢出和格式化字符串等常见漏洞的利用中出现的。堆栈溢出漏洞是指当程序在处理输入数据时，将数据写入到栈空间中的缓冲区时，超出了缓冲区的边界。攻击者可以利用这个漏洞覆盖栈上的返回地址，并将其指向gadgets序列，从而控制程序的执行流程。
 \par 研究人员在漏洞利用方面做了大量的工作，探索和利用各种漏洞形式。例如，通过输入数据中的特定格式化字符串，攻击者可以覆盖函数的返回地址，从而改变程序的执行流程。另一个常见的漏洞是缓冲区溢出，攻击者可以将恶意数据输入到缓冲区中，覆盖返回地址并控制程序的执行。
 \par 为了成功利用漏洞进行ROP攻击，研究人员使用了多种技术和方法。他们通过分析程序的源代码、二进制代码和运行时行为，寻找潜在的漏洞点。然后，他们通过构造适当的输入数据，精确地控制溢出和覆盖返回地址，使其指向gadgets序列的开头。
-\par 此外，研究人员还致力于发现新的漏洞形式和利用方法。他们通过不断深入研究和漏洞挖掘，提高对程序漏洞的理解，并开发出新的技术来克服现有防御机制。
+\par 此外，研究人员还致力于发现新的漏洞形式和利用方法。他们通过不断深入研究和漏洞挖掘，提高对程序漏洞的理解，并开发出新的技术来克服现有防御机制。\\
 
-\subparagraph{ROP链的构建}
+\textbf{ii. ROP链的构建}
 \par 构建有效的ROP链需要解决多个技术挑战，包括gadgets的选择、ROP链的布局和参数的传递等。
 \par 首先，研究人员提出了各种技术和工具来发现和选择合适的gadgets。其中，静态分析是一种常见的方法，通过对目标程序的二进制代码进行分析，提取出符合特定要求的gadgets。这种方法可以利用静态代码分析工具来自动化地识别和提取gadgets，大大减少了手动分析的工作量。此外，动态分析技术也被广泛应用于ROP链的构建中。通过在运行时观察程序的行为并收集执行信息，可以动态地发现和提取gadgets，从而构建有效的ROP链。
 \par 其次，研究人员关注ROP链的布局和连接方式。由于gadgets是以返回指令结尾的代码片段，因此它们需要按照正确的顺序连接在一起，以实现所需的操作。研究人员提出了多种布局策略，例如线性布局和分支布局。线性布局将gadgets按照顺序连接，每个gadget的返回地址即为下一个gadget的地址，这种布局简单直观。而分支布局则通过跳转指令来实现gadgets的连接，可以更灵活地构建ROP链。
 \par 此外，参数的传递也是ROP链构建的关键问题。由于ROP攻击的目的是改变程序的执行流程，因此需要能够控制寄存器的值或者传递特定的参数。研究人员通过分析目标程序的调用约定和参数传递方式，设计了各种技术来在ROP链中传递参数。这些技术包括将参数值存储在已知地址上、利用栈上的数据结构传递参数，或者通过其他寄存器来传递参数等。
-\par 为了自动化和简化ROP链的构建过程，研究人员还提出了一些工具和框架。这些工具可以根据目标程序的特征和需求，自动生成合适的ROP链。它们通常结合静态分析和动态分析技术，提供了便捷的方式来发现gadgets、构建ROP链和验证攻击效果。
+\par 为了自动化和简化ROP链的构建过程，研究人员还提出了一些工具和框架。这些工具可以根据目标程序的特征和需求，自动生成合适的ROP链。它们通常结合静态分析和动态分析技术，提供了便捷的方式来发现gadgets、构建ROP链和验证攻击效果。\\
 
-\subparagraph{ROP攻击的通用性}
+\textbf{iii. ROP攻击的通用性}
 \par 最初的ROP攻击是针对特定的漏洞和特定的程序实现的，但随着研究的深入，人们逐渐认识到ROP攻击具有广泛的适用性，并可以用于绕过各种内存保护机制和操作系统的安全措施。
 \par 研究人员发现，由于现代计算机体系结构中的代码复用现象普遍存在，攻击者可以通过组合已有的代码片段（gadgets）来构建任意的恶意操作序列。这些gadgets可以来自于程序本身、动态链接库（DLL）或操作系统中的代码段，因此攻击者并不需要直接注入恶意代码，而是利用现有的代码片段来构造攻击载荷。这使得ROP攻击具有很强的灵活性和适应性。
 \par ROP攻击的通用性研究主要集中在以下几个方面：
@@ -224,7 +224,7 @@ ROP攻击的研究现状主要包括以下几个方面：
     \item 自动化ROP链的生成和分析：为了简化ROP攻击的构建过程，研究人员致力于开发自动化工具和技术，用于生成和分析ROP链。这些工具可以通过静态或动态分析程序的二进制代码，提取可用的gadgets，并自动生成有效的ROP链，从而减少攻击者的手动工作量。
 \end{itemize}
 
-\subparagraph{防御技术的研究}
+\textbf{iv. 防御技术的研究}
 \par 随着ROP攻击的不断演进和威胁的增加，研究人员和安全专家开始致力于开发各种防御技术来减轻或阻止ROP攻击的影响。以下是一些主要的ROP防御技术：
 \begin{itemize}
     \item 内存随机化（ASLR）：内存随机化是一种常见的防御技术，通过随机化操作系统和应用程序的内存布局，使攻击者难以准确地确定gadgets和其他关键数据结构的位置。通过在每次系统启动时随机化内存布局，内存随机化增加了攻击者发现和利用ROP链所需的工作量。
@@ -921,15 +921,72 @@ for(int i=0;i<1;++i)
 }
 \end{lstlisting}
 \par 基于IPC模型，安全分区可以通过$psa\_read()$函数从非安全区读取数据，然后调用$psa\_crypto\_init()$函数初始化加密服务，最后调用$psa\_hash\_finish()$函数对数据进行哈希计算，最后将计算结果通过$psa\_write()$函数写回非安全区。
+
+
 \subsection{原型系统效果展示}
-\subsubsection{FASLR效果可视化网页展示}
+\subsubsection{基于QEMU模拟器的安全服务调用展示}
+\par 当我们在Qemu模拟处理器上开发时，常通过终端输出字符串表示代码运行成功。
+\par 例如，如图\ref{terminal}，我们在Qemu模拟处理器上自定义TF-M安全服务并进行测试时（详见第二章第三小节：Trusted Firmware-M部署及安全服务的实现），终端正确输出字符串,安全服务调用成功！
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=1.1]{graph/terminal output.png}
+    \caption{Qemu模拟处理器终端输出效果}
+    \label{terminal}
+\end{figure}
+
+\subsubsection{基于STM32L562E-DK开发板的系统部署展示}
+\par 当我们基于STM32L562E-DK开发板进行开发工作时，常通过小灯点亮表示代码运行成功。例如，我们在部署FreeRTOS时：
+\begin{itemize}
+    \item[1)]首先创建任务函数，该函数接收一个小灯引脚参数，并定时给与引脚高低电平，从而使小灯点亮。小灯点亮表示FreeRTOS部署成功。关键代码如下：
+    \begin{lstlisting}[language=C]{任务函数}
+        void vTaskLED(void * pvParameters) 
+        { 
+            ledInfo* info=pvParameters; 
+            while(1) 
+            { 
+                HAL_GPIO_TogglePin(info->port, info->pin); 
+                vTaskDelay(pdMS_TO_TICKS(500)); 
+            } 
+        } 
+    \end{lstlisting}
+    \item[2)]创建两个任务，并启动
+    \begin{lstlisting}[language=C]{任务启动}
+        ledInfo redLED={LED_RED_GPIO_Port,LED_RED_Pin}; 
+        ledInfo greenLED={LED_GREEN_GPIO_Port,LED_GREEN_Pin}; 
+        // 创建点亮任务 
+        xTaskCreate(vTaskLED, "LED_RED", 256, &redLED, 3, NULL); 
+        xTaskCreate(vTaskLED, "LED_GREEN", 256, &greenLED, 3, NULL); 
+        // 启动任务 
+        vTaskStartScheduler(); 
+    \end{lstlisting}
+\end{itemize}
+最终，如图\ref{LightUp}，成功点亮小灯，说明FreeRTOS部署成功。
+
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}[t]{0.4\textwidth} %textwidth值小于0.25，或者linewidth小于0.5，不过这里设置textwidth比设置linewidth效果好一些
+        \centering
+        \includegraphics[scale=1]{graph/Light_up1.png}
+    \end{minipage}
+    \hspace{0.3in} % 两图片之间的距离
+    \begin{minipage}[t]{0.4\textwidth}%textwidth值小于0.25
+        \centering
+        \includegraphics[scale=1]{graph/Light_up2.png}
+    \end{minipage}
+    \caption{小灯点亮}
+    \label{LightUp}
+\end{figure}
+
+\subsubsection{FASLR动态实时函数网页展示平台}
+\par 为了更清晰的显示函数在内存上的位置变化以及faslr的工作流程，我们对函数在内存中的位置进行实时获取，并通过如图\ref{web}所示的网页端进行展示。我们将非安全世界的function table显示至左侧的表格中，并根据函数的调用情况，实时展示其随机化后的位置，并展示在右侧的表格中。本例中可见，位于0x8100410的函数经过随机化加载，被加载至安全世界的0x20042720位置。
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.7]{graph/web.png}
     \caption{faslr可视化网页界面}
     \label{web}
 \end{figure}
-\par 为了更清晰的显示函数在内存上的位置变化以及faslr的工作流程，我们对函数在内存中的位置进行实时获取，并通过如图\ref{web}所示的网页端进行展示。我们将非安全世界的function table显示至左侧的表格中，并根据函数的调用情况，实时展示其随机化后的位置，并展示在右侧的表格中。本例中可见，位于0x8100410的函数经过随机化加载，被加载至安全世界的0x20042720位置。
+
 
 \section{作品测试与分析}
 \subsection{测试环境}
