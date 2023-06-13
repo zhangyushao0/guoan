@@ -317,14 +317,14 @@ ROP攻击的研究现状主要包括以下几个方面：\\
 \par 迄今为止，已有相关公司以及研究团队利用TrustZone-M技术提出面向资源受限设备的可信执行环境。Trusted Firmware-M（TF-M）是ARM公司针对ARMv8-M架构（包括Cortex-M23，Cortex-M33，Cortex-M55处理器）或者双核平台提供的一个基于双世界架构（即安全世界和非安全世界）的可信执行环境。它符合ARM公司为物联网嵌入式系统提出的首个行业安全平台架构PSA（Platform Security Architecture）标准，并由ARM公司主导开源。TF-M在ARMv8-M架构上利用TrustZone-M的隔离机制将程序执行环境划分为非安全处理环境（Non-secure Processing Environment，NSPE）以及安全处理环境（Secure Processing Environment，SPE）。在安全处理环境中，TF-M为用户层提供多种安全服务，比如安全启动、安全密钥、安全存储等。其内核层利用SAU以及MPU对安全服务之间进行运行时隔离，并为安全服务之间以及NSPE与安全服务之间提供了安全的通信、安全中断处理等机制，NSPE中的程序可以通过TF-M提供的PSA功能API对安全服务进行调用。然而，用户程序对安全服务进行调用时会进入阻塞直到调用结果返回，这是因为TF-M为满足PSA提出的高等级隔离，TF-M中安全服务的调用模型为信号驱动型且由TF-M内核提供进程间通信（Inter-processing Communication，IPC）机制负责与安全服务进行交互。
 \begin{figure}[htbp]
     \centering
-    \begin{minipage}[t]{0.4\textwidth} %textwidth值小于0.25，或者linewidth小于0.5，不过这里设置textwidth比设置linewidth效果好一些
+    \begin{minipage}[t]{0.45\textwidth} %textwidth值小于0.25，或者linewidth小于0.5，不过这里设置textwidth比设置linewidth效果好一些
         \centering
-        \includegraphics[scale=0.25]{graph/3.png}
+        \includegraphics[scale=0.28]{graph/3.png}
         \caption{异常处理操作模式切换}
         \label{fig: Exception handling operation mode switch}
     \end{minipage}
-    \hspace{0.58in} % 两图片之间的距离
-    \begin{minipage}[t]{0.4\textwidth}%textwidth值小于0.25
+    \hspace{0.50in} % 两图片之间的距离
+    \begin{minipage}[t]{0.35\textwidth}%textwidth值小于0.25
         \centering
         \includegraphics[scale=0.25]{graph/4.png}
         \caption{异常帧栈结构}
@@ -785,7 +785,7 @@ FUNCS_INFO funcs[@\textcolor{red}{162}@]={
               \item 输出函数信息以及解析数据如图\ref{sc}:
                     \begin{figure}[H]
                         \centering
-                        \includegraphics[scale=0.3]{graph/shuchujieguo.png}
+                        \includegraphics[scale=0.4]{graph/shuchujieguo.png}
                         \caption{输出函数信息以及解析数据}
                         \label{sc}
                     \end{figure}
