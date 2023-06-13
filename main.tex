@@ -770,8 +770,7 @@ FUNCS_INFO funcs[@\textcolor{red}{162}@]={
     .start_address=0x8100618,
     .size=72,
     .call_frame_size=0
-},}
-                                         \end{lstlisting}
+},} \end{lstlisting}
                     
           \end{enumerate}
     \item 终端运行
@@ -801,7 +800,7 @@ FUNCS_INFO funcs[@\textcolor{red}{162}@]={
 #include "funcs.h"
 uint32_t funcs_num=@\textcolor{red}{164}@;
 FUNCS_INFO funcs[@\textcolor{red}{164}@]={
-
+    
 {
     .start_address=0x8100238,
     .size=128,
@@ -821,12 +820,8 @@ FUNCS_INFO funcs[@\textcolor{red}{164}@]={
     .start_address=0x8100618,
     .size=72,
     .call_frame_size=0
-},}
-                    \end{lstlisting}
-                    
-                    
-                    
-          \end{enumerate}
+},}\end{lstlisting}
+     \end{enumerate}
 \end{enumerate}
 \par 依据上例可见，本工具成功修改函数表，具有可行性。
 
@@ -854,14 +849,8 @@ FUNCS_INFO funcs[@\textcolor{red}{164}@]={
     \item 在原有函数随机化中，我们通过 msp 栈指针获取函数的返回地址，然后对其进行随机化。然而，FreeRTOS 有 msp 和 psp 两个栈指针，其中 msp 指针用于系统内核和中断服务函数，psp 指针用于用户的任务。因此，我们需要通过 bl 寄存器的值来判断当前使用的栈指针是 msp 还是 psp，从而获取函数的返回地址。
           \begin{lstlisting}[language=C]{修改前}
 initial_msp_s=__get_MSP();
-<<<<<<< HEAD
 secureportREAD_MSP_NS(msp); \end{lstlisting}
-    \begin{lstlisting}[language=C]{修改后}
-=======
-secureportREAD_MSP_NS(msp);
-    \end{lstlisting}
           \begin{lstlisting}[language=C]{修改后}
->>>>>>> 39561b88e17fd41921757fb7e48104ce95eb4c26
 uint32_t ulLRValue;
 __asm volatile("mov %0, lr" : "=r" (ulLRValue) );
 if (((ulLRValue >> 3) & 1) == 0 || ((ulLRValue >> 2)&1) == 0) {
