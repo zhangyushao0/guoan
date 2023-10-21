@@ -127,20 +127,10 @@ hang = true,
     texcl=true,
 }
 
-\maketitle
+
 \thispagestyle{empty}
 \pagestyle{emptyStyle}
-\vspace{6cm}
-{
-    \Large\textbf{作品名称}：\textbf{\underline{\makebox[10cm]{基于TrustZone-M函数级内存地址}}}
-    
-    \textbf{\underline{\makebox[13cm]{空间随机化的可信实时系统}}}
-    
-    \textbf{电子邮箱}：\underline{\makebox[10cm]{\textbf{213211377@seu.edu.cn}}}
-    
-    \textbf{提交时间}：\underline{\makebox[10cm]{\textbf{\today}}}
-}
-
+\includepdf{src/xiaoyuanCover.pdf}
 \clearpage
 \tableofcontents
 \clearpage
@@ -655,7 +645,7 @@ FUNCS_INFO funcs[@\textcolor{red}{164}@]={
 \par 依据上例可见，本工具成功修改函数表，具有可行性。
 
 \subsubsection{面向实时操作系统 FreeRTOS 的函数级地址空间布局随机化部署}
-\par 本节需要在非安全世界中部署 FreeRTOS 操作系统，FreeRTOS 操作系统会在非安全世界创建任务并运行，从而触发安全世界的函数随机化安全服务，从而实现对非安全世界的函数实现地址空间随机化。
+\par 本节需要在非安全世界中部署 FreeRTOS 操作系统，FreeRTOS 操作系统会在非安全世界创建任务并��行，从而触发安全世界的函数随机化安全服务，从而实现对非安全世界的函数实现地址空间随机化。
 \paragraph{FreeRTOS 简介}
 \par 实时操作系统（RTOS）是一种能够以足够快的速度接受并处理外界事件或数据的操作系统。它的主要特点是能够在规定的时间范围内控制生产过程或快速响应处理系统，并协调管理所有实时任务的运行。FreeRTOS是一款轻量级的开源实时操作系统，具有较小的内存占用和快速的任务切换速度，适用于资源受限的嵌入式系统。并且FreeRTOS具备良好的可移植性，可以在多种处理器架构和开发环境中使用，支持多种编译器和开发工具链。总的来说，FreeRTOS是构建高效、可靠和实时响应的嵌入式系统的理想选择。
 \paragraph{FreeRTOS 在非安全世界的部署}
@@ -859,7 +849,7 @@ vTaskStartScheduler(); \end{lstlisting}
 \begin{longtable}{ccccc}
     % \centering  % 显示位置为中间
     \caption{FASLR性能测试结果}  % 表格标题
-    \label{table1}                                            \\ % 用于索引表格的标签
+    \label{table1}                                          \\ % 用于索引表格的标签
     % \begin{tabular}{ccccc}
     % \hline
     % 应用程序                 & 清理次数 & 基准时间    & FASLR   & 性能开销    \\ \hline
@@ -885,16 +875,16 @@ vTaskStartScheduler(); \end{lstlisting}
     % Beebs-levenshiein    & 1    & 17.42s  & 17.97s  & 3.16\%  \\ 
     % Beebs-edn            & 2    & 15.96s  & 16.24s  & 1.75\%  \\ \hline
     \hline
-应用程序          & 清理次数 & 基准时间   & fASLR  & 性能开销    \\ \hline
-aha\_compress & 0    & 4.476s & 4.521s & 1.01\%  \\ 
-bubblesort    & 0    & 0.315s & 0.319s & 1.27\%  \\ 
-cnt           & 0    & 6.818s & 6.884s & 0.97\%  \\ 
-compress      & 0    & 0.685s & 0.688s & 0.44\%  \\ 
-lcdnum        & 0    & 0.048s & 0.050s & 4.17\%  \\ 
-mont64        & 0    & 3.633s & 4.587s & 26.26\% \\ 
-ns            & 0    & 2.439s & 2.539s & 4.10\%  \\ 
-prime         & 0    & 0.013s & 0.014s & 7.69\%  \\ 
-qsort         & 0    & 0.185s & 0.188s & 1.62\%  \\ \hline
+    应用程序      & 清理次数 & 基准时间 & fASLR  & 性能开销 \\ \hline
+    aha\_compress & 0        & 4.476s   & 4.521s & 1.01\%   \\ 
+    bubblesort    & 0        & 0.315s   & 0.319s & 1.27\%   \\ 
+    cnt           & 0        & 6.818s   & 6.884s & 0.97\%   \\ 
+    compress      & 0        & 0.685s   & 0.688s & 0.44\%   \\ 
+    lcdnum        & 0        & 0.048s   & 0.050s & 4.17\%   \\ 
+    mont64        & 0        & 3.633s   & 4.587s & 26.26\%  \\ 
+    ns            & 0        & 2.439s   & 2.539s & 4.10\%   \\ 
+    prime         & 0        & 0.013s   & 0.014s & 7.69\%   \\ 
+    qsort         & 0        & 0.185s   & 0.188s & 1.62\%   \\ \hline
 \end{longtable}
 
 \subparagraph{内存评估}
@@ -902,7 +892,7 @@ qsort         & 0    & 0.185s & 0.188s & 1.62\%  \\ \hline
 \begin{longtable}{ccccc}
     % \centering  % 显示位置为中间
     \caption{FASLR内存资源测试结果}
-    \label{table2}                                         \\
+    \label{table2}                                               \\
     \hline
     % 应用程序                 & 总函数个数 & 基准内存大小 & FASLR & 内存开销   \\ \hline
     % AirqualityMonitor    & 148   & 41092  & 43036 & 4.73\% \\ 
@@ -927,16 +917,16 @@ qsort         & 0    & 0.185s & 0.188s & 1.62\%  \\ \hline
     % Beebs-levenshiein    & 138   & 39708  & 41348 & 4.13\% \\ 
     % Beebs-edn            & 144   & 42112  & 43736 & 3.86\% \\ \hline
     \hline
-应用程序          & 总函数个数 & 基准内存大小 & fASLR & 内存开销    \\ \hline
-aha\_compress & 212   & 45104  & 54416 & 20.65\% \\ 
-bubblesort    & 209   & 44920  & 54184 & 20.62\% \\ 
-cnt           & 211   & 48584  & 57888 & 19.15\% \\ 
-compress      & 215   & 48128  & 57480 & 19.43\% \\ 
-lcdnum        & 209   & 44232  & 53424 & 20.78\% \\ 
-mont64        & 212   & 46080  & 55392 & 20.21\% \\ 
-ns            & 209   & 49192  & 58472 & 18.86\% \\ 
-prime         & 212   & 44240  & 53552 & 21.05\% \\ 
-qsort         & 209   & 45240  & 54520 & 20.51\% \\ \hline
+    应用程序      & 总函数个数 & 基准内存大小 & fASLR & 内存开销 \\ \hline
+    aha\_compress & 212        & 45104        & 54416 & 20.65\%  \\ 
+    bubblesort    & 209        & 44920        & 54184 & 20.62\%  \\ 
+    cnt           & 211        & 48584        & 57888 & 19.15\%  \\ 
+    compress      & 215        & 48128        & 57480 & 19.43\%  \\ 
+    lcdnum        & 209        & 44232        & 53424 & 20.78\%  \\ 
+    mont64        & 212        & 46080        & 55392 & 20.21\%  \\ 
+    ns            & 209        & 49192        & 58472 & 18.86\%  \\ 
+    prime         & 212        & 44240        & 53552 & 21.05\%  \\ 
+    qsort         & 209        & 45240        & 54520 & 20.51\%  \\ \hline
 \end{longtable}
 
 \subparagraph{运行时随机熵分布评估}
