@@ -9,6 +9,7 @@ jobs:
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v3
         with:
+          pre_compile: "tlmgr update --self && tlmgr update --all && tlmgr install fandol" 
           root_file: main.tex
       - name: Upload PDF file
         uses: actions/upload-artifact@v3
